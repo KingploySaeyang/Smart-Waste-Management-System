@@ -1,0 +1,2715 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Smart Waste - รายการถัง</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="a_style.css">
+    <link rel="stylesheet" href="addBin_style.css">
+    <link rel="stylesheet" href="admin-shell.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+    <!-- ================= Firebase / Libs ================= -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ================= Auth ================= -->
+    <script src="../Login/auth.js"></script>
+
+    <!-- ================= i18n CORE ================= -->
+    <script src="../i18n/lang.js"></script>
+
+    <!-- ================= Language packs ================= -->
+    <script src="../i18n/th.js"></script>
+    <script src="../i18n/en.js"></script>
+    <script src="../i18n/ms.js"></script>
+
+    <!-- ================= Admin language bridge ================= -->
+    <script src="admin-lang.js"></script>
+    <script src="admin-shell.js" defer></script>
+
+    <!-- ================= Page logic ================= -->
+    <script src="admin-user.js" defer></script>
+    <script src="admin-nav.js" defer></script>
+    <script src="admin-profile.js" defer></script>
+    <script src="admin-auth-bootstrap.js" defer></script>
+</head>
+
+<body data-active-nav="register">
+    <div id="pageLoader" class="shell-loader">
+        <div class="loader-box">
+            <div class="loader-spinner"></div>
+            <div class="loader-text" id="loaderText">กำลังโหลด...</div>
+        </div>
+    </div>
+    <main>
+        <div class="bin-page">
+            <div class="page-head">
+                <div>
+                    <h1 class="page-title" id="pageTitleHeading">รายการถังขยะ</h1>
+                    <p class="page-sub" id="addBinHeaderTitle">เพิ่มข้อมูลถังขยะ</p>
+                </div>
+                <div class="page-actions">
+                    <button type="button" class="primary" id="btnToggleForm">
+                        <i class="ri-add-circle-line btn-icon"></i>
+                        <span class="btnCreateLabel" id="btnToggleFormLabel">เพิ่มถังขยะ</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="card bin-table-card">
+                    <div class="table-toolbar">
+                        <div class="table-title-wrap">
+                            <h4 class="table-title" id="binsTableTitle">รายการถังขยะ</h4>
+                            <p id="binsStatus" class="count-label muted"></p>
+                        </div>
+                        <div class="toolbar-fields">
+                            <label class="toolbar-field">
+                                <span id="filterZoneLabel">เขตพื้นที่</span>
+                                <select id="filterZone">
+                                    <option value="">📍 เขตทั้งหมด</option>
+                                </select>
+                            </label>
+
+                            <label class="toolbar-field">
+                                <span id="filterAreaLabel">พื้นที่ย่อย (Area)</span>
+                                <select id="filterArea" disabled>
+                                    <option value="">📍 พื้นที่ทั้งหมด</option>
+                                </select>
+                            </label>
+
+                            <label class="toolbar-field search-box">
+                                <span id="filterBinLabel">BIN / เจ้าของ</span>
+                                <input id="filterBinText" type="text" placeholder="กรองตาม BIN หรือชื่อเจ้าของ">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="usage-table">
+                            <thead>
+                                <tr>
+                                    <th id="thZone">เขต</th>
+                                    <th id="thArea">พื้นที่ย่อย</th>
+                                    <th id="thBin">BIN</th>
+                                    <th id="thOwner">เจ้าของถังขยะ</th>
+                                    <th id="thRfid">RFID</th>
+                                    <th id="thCoords">พิกัด (lat,lng)</th>
+                                    <th id="thDetails">รายละเอียด</th>
+                                    <th id="thUpdated">อัปเดตเมื่อ</th>
+                                    <th id="thManage">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="binsRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-backdrop zone-area-modal" id="zoneModalBackdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="zoneModalTitle"></div>
+                <button type="button" class="modal-close" id="btnCloseZoneModal">✕</button>
+            </div>
+
+            <div id="zoneList"></div>
+
+
+            <hr style="margin:10px 0">
+
+            <div class="zone-row">
+                <input type="text" id="newZoneName">
+                <button type="button" class="primary" id="btnAddZone">เพิ่มเขต</button>
+            </div>
+
+            <div class="modal-footer">
+                <span class="muted" id="zoneModalMsg"></span>
+                <button type="button" class="ghost" id="btnZoneDone">ยืนยัน</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-backdrop zone-area-modal" id="areaModalBackdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="areaModalTitle">จัดการพื้นที่ย่อย (Area) ใน <span id="currentZoneName"
+                        style="color:#2563eb"></span></div>
+                <button type="button" class="modal-close" id="btnCloseAreaModal">✕</button>
+            </div>
+
+            <div id="areaList"></div>
+
+
+            <hr style="margin:10px 0">
+
+            <div class="zone-row">
+                <input type="text" id="newAreaName">
+                <button type="button" class="primary" id="btnAddArea">เพิ่ม Area</button>
+            </div>
+
+            <div class="modal-footer">
+                <span class="muted" id="areaModalMsg"></span>
+                <button type="button" class="ghost" id="btnAreaDone">ยืนยัน</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="addBinBackdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="addBinModalTitle">เพิ่มข้อมูลถังขยะ</div>
+                <button type="button" class="modal-close" id="btnAddClose">✕</button>
+            </div>
+
+            <form id="binForm" autocomplete="off">
+
+                <!-- 1️⃣ MAC Address -->
+                <div class="row">
+                    <div style="flex:1 1 100%">
+                        <label id="labelMacAddress"></label>
+                        <div class="row mac-row" style="gap:8px">
+                            <select id="macAddress" style="flex: 2 1 180px;">
+                                <option value="" id="macLoadingOption"></option>
+                            </select>
+                            <button type="button" class="ghost" id="btnConfirmMac" disabled>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2️⃣ RFID -->
+                <div class="row">
+                    <div style="flex:1 1 100%">
+                        <label id="labelRfid">RFID Tag</label>
+                        <input id="rfid" type="text" placeholder="สแกน RFID Tag หรือป้อนเอง" />
+                    </div>
+                </div>
+
+
+                <!-- 3️⃣ Zone / Area -->
+                <div class="row">
+                    <div style="flex:1 1 260px">
+                        <label id="labelZone">เขตพื้นที่</label>
+                        <select id="zone"></select>
+                    </div>
+
+                    <div style="flex:1 1 260px">
+                        <label id="labelArea">พื้นที่ย่อย (Area)</label>
+                        <select id="area" disabled></select>
+                    </div>
+                </div>
+
+                <!-- 4️⃣ BIN ID + Owner -->
+                <div class="row">
+                    <div>
+                        <label id="labelBinId">ชื่อถัง</label>
+                        <input id="binId" type="text" readonly />
+                    </div>
+                    <div>
+                        <label id="labelOwner">ผู้ใช้เจ้าของถัง</label>
+                        <select id="owner"></select>
+                    </div>
+                </div>
+
+                <!-- 5️⃣ พิกัด -->
+                <label id="labelPosition">ตำแหน่ง</label>
+                <div class="row">
+                    <div><input id="lng" type="number" step="any" placeholder="Longitude" /></div>
+                    <div><input id="lat" type="number" step="any" placeholder="Latitude" /></div>
+                </div>
+
+                <!-- 6️⃣ ปุ่มแผนที่ -->
+                <div class="gps-actions">
+                    <button type="button" id="btnPickMap" class="primary">เลือกจากแผนที่</button>
+                </div>
+
+                <!-- 7️⃣ รายละเอียด -->
+                <div class="row">
+                    <div style="flex:1 1 100%">
+                        <label id="labelDetails">รายละเอียดเพิ่มเติม</label>
+                        <textarea id="details"></textarea>
+                    </div>
+                </div>
+                <div class="row form-actions">
+                    <span id="msg" class="muted"></span>
+                    <div class="actions">
+                        <button type="button" class="ghost" id="btnReset">เคลียร์ฟอร์ม</button>
+                        <button type="submit" class="primary" id="btnSave">บันทึก</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="mapModalBackdrop">
+        <div class="modal map-modal">
+            <div class="modal-header">
+                <div class="modal-title" id="mapModalTitle">เลือกตำแหน่งบนแผนที่</div>
+            </div>
+            <div class="map-body">
+                <div id="binMap"></div>
+                <div class="map-hint muted" id="mapHint">คลิกบนแผนที่เพื่อมาร์กจุด</div>
+            </div>
+            <div class="modal-footer">
+                <span class="muted" id="mapStatus"></span>
+                <div class="actions">
+                    <button type="button" class="ghost" id="btnMapCancel">ออกจากแผนที่</button>
+                    <button type="button" class="primary" id="btnMapConfirm">ยืนยันตำแหน่ง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop" id="editModalBackdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="editModalTitle">แก้ไขข้อมูลถังขยะ</div>
+                <button type="button" class="modal-close" id="btnEditClose">✕</button>
+            </div>
+
+            <form id="editForm" autocomplete="off">
+                <input type="hidden" id="editDocZone">
+                <input type="hidden" id="editDocArea">
+                <input type="hidden" id="editDocBinId">
+
+                <div class="row">
+                    <div>
+                        <label id="editLabelZone">เขตพื้นที่</label>
+                        <input id="editZoneDisplay" type="text" readonly />
+                    </div>
+                    <div>
+                        <label id="editLabelArea">พื้นที่ย่อย (Area)</label>
+                        <input id="editAreaDisplay" type="text" readonly />
+                    </div>
+                    <div>
+                        <label id="editLabelBinId">ชื่อถัง (BIN)</label>
+                        <input id="editBinIdDisplay" type="text" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label id="editLabelRfid">RFID Tag</label>
+                        <input id="editRfid" type="text" />
+                    </div>
+
+                    <div>
+                        <label id="editLabelMacAddress">MAC Address</label>
+                        <input id="editMacAddress" type="text" readonly />
+                    </div>
+                </div>
+
+                <label id="editLabelPosition">ตำแหน่ง</label>
+                <div class="row">
+                    <div>
+                        <input id="editLng" type="number" step="any" placeholder="ลองจิจูด (longitude)" />
+                    </div>
+                    <div>
+                        <input id="editLat" type="number" step="any" placeholder="ละติจูด (latitude)" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div style="flex:1 1 100%">
+                        <label id="editLabelDetails">รายละเอียดเพิ่มเติม</label>
+                        <textarea id="editDetails"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <span id="editMsg" class="muted"></span>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="ghost" id="editCancel">ยกเลิก</button>
+                        <button type="submit" class="primary" id="btnSaveChanges">บันทึกการแก้ไข</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="actions">
+                        <button type="button" class="ghost" id="btnReset">เคลียร์ฟอร์ม</button>
+                        <button type="submit" class="primary" id="btnSave">บันทึก</button>
+                    </div>
+                    <span id="msg" class="muted"></span>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ✅ App Check DEBUG MODE (ต้องอยู่บนสุด)
+        // self.FIREBASE_APPCHECK_DEBUG_TOKEN = '69292E90-2881-49B1-8F56-968136924EB1';
+        // ---------- Firebase Configuration (จากโค้ดเดิมของคุณ) ----------
+        var firebaseConfig = {
+            apiKey: "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw",
+            authDomain: "smartwaste2568-1d792.firebaseapp.com",
+            databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "smartwaste2568-1d792",
+            storageBucket: "smartwaste2568-1d792.firebasestorage.app",
+            messagingSenderId: "1041339993312",
+            appId: "1:1041339993312:web:65b26ea83dcbf4f8b29485",
+            measurementId: "G-FV5TEPVZWN",
+            measurementId: "G-FV5TEPVZWN",
+            // 🚨 เพิ่มบรรทัดนี้ (ก๊อป URL มาจากหน้า Realtime Database ของคุณ)
+            databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+        const rtdb = firebase.database();
+
+        const zonesCol = db.collection("zones");
+        const usersCol = db.collection("users");
+        const allBinsGroup = db.collectionGroup("bin_data");
+
+        // 🚨 NEW: RTDB Paths for RFID and MAC/Sensor
+        const RTDB_RFID_PATH = 'rfid_input/tagId';
+        const DEVICES_STATUS_BASE_PATH = 'esp32_devices';
+        // END NEW
+        // -----------------------------------------------------------
+        // 🔌 ควบคุมไฟ LED ของบอร์ด ESP32 (ON / OFF)
+        // -----------------------------------------------------------
+        async function setBoardLed(mac, state) {
+            if (!mac) return;
+            try {
+                await rtdb
+                    .ref(`${DEVICES_STATUS_BASE_PATH}/${mac}/command/led`)
+                    .set(state);
+            } catch (e) {
+                console.error("LED command error", e);
+            }
+        }
+        // 🔴 ยกเลิกการยืนยันอุปกรณ์ (ดับไฟ + รีเซ็ตปุ่ม)
+        async function releaseConfirmedMac() {
+            if (confirmedMacTemp) {
+                await setBoardLed(confirmedMacTemp, "OFF");
+
+                await rtdb
+                    .ref(`esp32_devices/${confirmedMacTemp}/currentAdmin`)
+                    .remove();
+
+                // 🔥 เพิ่มบรรทัดนี้
+                await rtdb
+                    .ref(`admin_rfid_active/${window.ADMIN_AUTH.uid}`)
+                    .remove();
+
+                confirmedMacTemp = null;
+            }
+
+            macAddressEl.disabled = false;
+            macAddressEl.value = "";
+
+            btnConfirmMac.classList.remove("confirmed");
+            btnConfirmMac.disabled = true;
+        }
+
+        const $ = id => document.getElementById(id);
+
+        const pageLoader = $("pageLoader");
+        const loaderTextEl = $("loaderText");
+        let initialLoadPending = true;
+        let initialZonesCount = 0;
+        const initialBinZones = new Set();
+
+        function showLoader(text) {
+            if (!pageLoader) return;
+            if (text && loaderTextEl) loaderTextEl.textContent = text;
+            pageLoader.classList.add("show");
+        }
+
+        function hideLoader() {
+            if (pageLoader) pageLoader.classList.remove("show");
+        }
+
+        function hideLoaderOnce() {
+            if (!initialLoadPending) return;
+            initialLoadPending = false;
+            hideLoader();
+        }
+
+        showLoader();
+
+        // ฟอร์ม + ปุ่ม
+        const binForm = $("binForm");
+        const binIdEl = $("binId");
+        const zoneEl = $("zone");
+        const areaEl = $("area"); // New Area element
+        const ownerEl = $("owner");
+        const rfidEl = $("rfid"); // RFID is now the first field
+        const latEl = $("lat");
+        const lngEl = $("lng");
+        const detailsEl = $("details");
+        const macAddressEl = $("macAddress"); // 🚨 NEW
+        const btnConfirmMac = $("btnConfirmMac"); // 🚨 NEW
+
+        const msg = $("msg");
+        const btnReset = $("btnReset");
+        const btnPickMap = $("btnPickMap");
+        const mapModalBackdrop = $("mapModalBackdrop");
+        const mapModalTitle = $("mapModalTitle");
+        const mapStatusEl = $("mapStatus");
+        const mapHintEl = $("mapHint");
+        const btnMapCancel = $("btnMapCancel");
+        const btnMapConfirm = $("btnMapConfirm");
+        const binMapEl = $("binMap");
+        let menuToggleBtn = $("menuToggleBtn");
+        let sidebarEl = $("sidebar");
+        let langSelect = $("langSelect");
+        const btnToggleForm = $("btnToggleForm");
+        const btnToggleFormLabel = $("btnToggleFormLabel");
+        const addBinHeaderTitle = $("addBinHeaderTitle");
+        const addBinBackdrop = $("addBinBackdrop");
+        const btnAddClose = $("btnAddClose");
+
+        // filter controls
+        const binsStatusEl = $("binsStatus");
+        const binsTableTitle = $("binsTableTitle");
+        const binsRowsEl = $("binsRows");
+        const filterBinText = $("filterBinText");
+        const filterZoneSelect = $("filterZone");
+        const filterAreaSelect = $("filterArea"); // New Area Filter
+
+        // zone modal
+        const zoneModalBackdrop = $("zoneModalBackdrop");
+        const zoneListEl = $("zoneList");
+        const newZoneNameEl = $("newZoneName");
+        const btnAddZone = $("btnAddZone");
+        const btnCloseZoneModal = $("btnCloseZoneModal");
+        const btnZoneDone = $("btnZoneDone");
+        const zoneModalMsg = $("zoneModalMsg");
+
+        // area modal
+        const areaModalBackdrop = $("areaModalBackdrop");
+        const areaListEl = $("areaList");
+        const newAreaNameEl = $("newAreaName");
+        const btnAddArea = $("btnAddArea");
+        const btnCloseAreaModal = $("btnCloseAreaModal");
+        const btnAreaDone = $("btnAreaDone");
+        const areaModalMsg = $("areaModalMsg");
+        const currentZoneNameEl = $("currentZoneName");
+        let activeZoneForArea = null;
+
+        // edit modal
+        const editModalBackdrop = $("editModalBackdrop");
+        const editModal = editModalBackdrop.querySelector('.modal'); // อ้างอิง Modal content
+        const editForm = $("editForm");
+        const editDocZone = $("editDocZone");
+        const editDocArea = $("editDocArea"); // New Edit Area
+        const editDocBinId = $("editDocBinId");
+        const editZoneDisplay = $("editZoneDisplay");
+        const editAreaDisplay = $("editAreaDisplay"); // New Edit Area Display
+        const editBinIdDisplay = $("editBinIdDisplay");
+        const editRfid = $("editRfid");
+        const editMacAddress = $("editMacAddress"); // 🚨 NEW
+        const editLat = $("editLat");
+        const editLng = $("editLng");
+        const editMsg = $("editMsg");
+        const btnEditClose = $("btnEditClose");
+        const btnEditCancel = $("editCancel");
+
+        // language icon + menu
+        let langIconBtn = $("langIconBtn");
+        let langMenu = $("langMenu");
+
+        function refreshShellRefs() {
+            if (!menuToggleBtn) menuToggleBtn = $("menuToggleBtn");
+            if (!sidebarEl) sidebarEl = $("sidebar");
+            if (!langSelect) langSelect = $("langSelect");
+            if (!langIconBtn) langIconBtn = $("langIconBtn");
+            if (!langMenu) langMenu = $("langMenu");
+        }
+
+        // 🚨 NEW: MAC Address data and listener
+        let macAddresses = [];
+        let macAddressListenerUnsub = null;
+        // 🧠 MAC ที่ถูกยืนยันแล้วแต่ยังไม่บันทึก
+        let confirmedMacTemp = null;
+        // 🕒 เก็บเวลาที่เว็บเห็น MAC ล่าสุด
+        const macLastSeenMap = {};
+        let lastDevicesSnapshot = {};   // ← ขาดตัวนี้
+        const OFFLINE_TIMEOUT_MS = 5 * 60 * 1000;
+        // END NEW
+
+
+        function lockBodyScroll(lock) {
+            document.body.classList.toggle("modal-open", !!lock);
+        }
+
+        let duplicatedRfidDetected = false;
+        let isHandlingRfid = false;
+        let rfidCheckTimer = null;
+        let lastRfidChecked = "";
+        const handlingMacs = new Set(); // ⭐ เพิ่มตรงนี้
+
+        const LangState = window.AdminLang;
+        let currentLang = (LangState && typeof LangState.getLang === "function") ?
+            LangState.getLang() :
+            (localStorage.getItem('sw_lang') || 'th');
+        // 🔥 ฟังการเปลี่ยนภาษา จาก admin-lang.js (ศูนย์กลาง)
+        if (window.AdminLang && typeof window.AdminLang.onChange === "function") {
+            window.AdminLang.onChange(lang => {
+                if (lang && lang !== currentLang) {
+                    currentLang = lang;
+                    changeLanguage(lang, true);
+                }
+            });
+        }
+
+        function getTranslation(key) {
+            const dict = window.SW_Translations || {};
+            const langPack = dict[currentLang] || dict.th || {};
+            return langPack[key] || key;
+        }
+
+
+        function t(key) {
+            return getTranslation(key);
+        }
+
+        if (loaderTextEl) {
+            loaderTextEl.textContent = t('loading');
+        }
+
+        const confirmMacMedia = window.matchMedia("(max-width: 900px)");
+        function updateConfirmMacLabel() {
+            if (!btnConfirmMac) return;
+            const fullLabel = t('btnConfirmMac');
+            const shortLabel = t('btnConfirmMacShort');
+            const useShort = confirmMacMedia && confirmMacMedia.matches;
+            btnConfirmMac.textContent = (useShort && shortLabel && shortLabel !== "btnConfirmMacShort") ? shortLabel : fullLabel;
+        }
+        if (confirmMacMedia && typeof confirmMacMedia.addEventListener === "function") {
+            confirmMacMedia.addEventListener("change", updateConfirmMacLabel);
+        } else {
+            window.addEventListener("resize", updateConfirmMacLabel);
+        }
+        updateConfirmMacLabel();
+
+        function setStatusForm(text, type) {
+            msg.textContent = text || "";
+            msg.className = "muted" + (type === "ok" ? " ok" : type === "err" ? " err" : "");
+        }
+
+        function setBinsStatus(text, type) {
+            binsStatusEl.textContent = text || "";
+            binsStatusEl.className = "count-label muted" + (type === "ok" ? " ok" : type === "err" ? " err" : "");
+        }
+
+        function errStr(e) {
+            return (e && (e.code ? e.code + ": " + (e.message || "") : (e.message || String(e)))) || "unknown";
+        }
+
+        // =======================
+        // 🚨 SweetAlert แจ้ง error ฟอร์ม
+        // =======================
+        function showFormErrorCard(errors) {
+
+            // 🔥 ปิด modal อื่นทั้งหมดก่อน
+            closeEditModal?.();
+            closeZoneModal?.();
+            closeAreaModal?.();
+            // ❗ ไม่ปิด addBinBackdrop เพื่อให้ user แก้ฟอร์มต่อได้
+
+            Swal.fire({
+                icon: "warning",
+                title: t('formErrorTitle'),
+                html: `
+    <div style="text-align:left; line-height:1.6">
+      <ul style="padding-left:18px">
+        ${errors.map(e => `<li>${e}</li>`).join("")}
+      </ul>
+    </div>
+  `,
+                confirmButtonText: t('btnOk'),
+                confirmButtonColor: "#2563eb",
+                allowOutsideClick: false,
+                allowEscapeKey: true
+            }).then(() => {
+                document.querySelector(".error")?.focus();
+            });
+        }
+
+        // ---------- owners ----------
+        let owners = [];
+        let ownerMap = new Map();
+        let ownerSelectState = "loading";
+        let rfidListenerRef = null;
+
+        function renderOwnerSelect() {
+            if (!ownerEl) return;
+            const selected = ownerEl.value;
+            ownerEl.innerHTML = "";
+            const opt = document.createElement("option");
+            opt.value = "";
+            const state = ownerSelectState;
+            if (state === "loading") {
+                opt.textContent = getTranslation('ownerSelectLoading');
+                ownerEl.disabled = true;
+            } else if (state === "error") {
+                opt.textContent = getTranslation('ownerSelectError');
+                ownerEl.disabled = true;
+            } else if (!owners.length) {
+                opt.textContent = getTranslation('ownerSelectEmpty');
+                ownerEl.disabled = true;
+            } else {
+                opt.textContent = getTranslation('ownerSelectDefault');
+                ownerEl.disabled = false;
+            }
+            ownerEl.appendChild(opt);
+            if (state === "ready" && owners.length) {
+                owners.forEach(user => {
+                    const option = document.createElement("option");
+                    option.value = user.username;
+                    option.textContent = `${user.displayName} (${user.username})`;
+                    ownerEl.appendChild(option);
+                });
+                if (selected && ownerMap.has(selected)) {
+                    ownerEl.value = selected;
+                } else {
+                    ownerEl.value = "";
+                }
+            } else {
+                ownerEl.value = "";
+            }
+        }
+
+        async function loadOwners() {
+            ownerSelectState = "loading";
+            renderOwnerSelect();
+            try {
+                const snap = await usersCol.where("status", "==", 2).get();
+                const locale = currentLang === "en" ? "en" : currentLang === "ms" ? "ms" : "th";
+                owners = snap.docs.map(doc => {
+                    const data = doc.data() || {};
+                    const fullName = (data.fullName || "").trim();
+                    const username = doc.id;
+                    return {
+                        username,
+                        displayName: fullName || username,
+                        fullName
+                    };
+                }).sort((a, b) => a.displayName.localeCompare(b.displayName, locale, {
+                    sensitivity: "base"
+                }));
+                ownerMap = new Map(owners.map(user => [user.username, user]));
+                ownerSelectState = "ready";
+                renderOwnerSelect();
+            } catch (err) {
+                console.error("loadOwners error", err);
+                ownerSelectState = "error";
+                renderOwnerSelect();
+                setStatusForm(`${getTranslation('ownerLoadError')} ${errStr(err)}`, "err");
+            }
+        }
+
+        // ---------- zones ----------
+        let zones = [];
+
+        function renderZoneSelect() {
+            const selected = zoneEl.value;
+            zoneEl.innerHTML = "";
+            const opt0 = document.createElement("option");
+            opt0.value = "";
+            opt0.textContent = zones.length ? getTranslation('zoneSelectDefault') : getTranslation('zoneSelectNoZones');
+            zoneEl.appendChild(opt0);
+
+            zones.forEach(z => {
+                const opt = document.createElement("option");
+                opt.value = z.id;
+                opt.textContent = z.name;
+                zoneEl.appendChild(opt);
+            });
+
+            const addOpt = document.createElement("option");
+            addOpt.value = "_add_zone_";
+            addOpt.textContent = getTranslation('zoneSelectAdd');
+            zoneEl.appendChild(addOpt);
+
+            if (selected) zoneEl.value = selected;
+        }
+
+        function renderZoneFilterOptions() {
+            if (!filterZoneSelect) return;
+            const prev = filterZoneSelect.value;
+            filterZoneSelect.innerHTML = "";
+            const allOpt = document.createElement("option");
+            allOpt.value = "";
+            allOpt.textContent = t('filterZoneAll');
+            filterZoneSelect.appendChild(allOpt);
+
+            zones.forEach(z => {
+                const opt = document.createElement("option");
+                opt.value = z.id;
+                opt.textContent = z.name;
+                filterZoneSelect.appendChild(opt);
+            });
+
+            if (prev && zones.some(z => z.id === prev)) {
+                filterZoneSelect.value = prev;
+            } else {
+                filterZoneSelect.value = "";
+            }
+        }
+
+        function renderZoneList() {
+            zoneListEl.innerHTML = "";
+            if (!zones.length) {
+                zoneListEl.innerHTML = `<p class="muted">${getTranslation('zoneModalNoZones')}</p>`;
+                return;
+            }
+
+            zones.forEach(z => {
+                const row = document.createElement("div");
+                row.className = "zone-row";
+
+                const input = document.createElement("input");
+                input.value = z.name;
+                input.dataset.oldId = z.id;
+
+                const btnSaveZone = document.createElement("button");
+                btnSaveZone.type = "button";
+                btnSaveZone.className = "primary";
+                btnSaveZone.textContent = getTranslation('zoneModalSaveBtn');
+
+                const btnDeleteZone = document.createElement("button");
+                btnDeleteZone.type = "button";
+                btnDeleteZone.className = "danger";
+                btnDeleteZone.textContent = getTranslation('zoneModalDeleteBtn');
+
+                btnSaveZone.addEventListener("click", async () => {
+                    const oldId = input.dataset.oldId;
+                    const newName = input.value.trim();
+                    if (!newName) {
+                        zoneModalMsg.textContent = getTranslation('zoneModalEmptyName');
+                        zoneModalMsg.className = "muted err";
+                        return;
+                    }
+                    if (oldId === newName) {
+                        zoneModalMsg.textContent = getTranslation('zoneModalNoChange');
+                        zoneModalMsg.className = "muted";
+                        return;
+                    }
+
+                    try {
+                        const binsSnap = await allBinsGroup.where("zone", "==", oldId).limit(1).get();
+                        if (!binsSnap.empty) {
+                            zoneModalMsg.textContent = getTranslation('zoneModalCannotChange');
+                            zoneModalMsg.className = "muted err";
+                            return;
+                        }
+
+                        const oldDoc = zonesCol.doc(oldId);
+                        const newDoc = zonesCol.doc(newName);
+                        const oldData = (await oldDoc.get()).data() || {};
+
+                        // Check if new zone name already exists
+                        const newSnap = await newDoc.get();
+                        if (newSnap.exists) {
+                            zoneModalMsg.textContent = getTranslation('zoneModalExists');
+                            zoneModalMsg.className = "muted err";
+                            return;
+                        }
+
+                        // Firestore transaction to rename (create and delete)
+                        await newDoc.set({
+                            name: newName,
+                            createdAt: oldData.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        await oldDoc.delete();
+
+                        zoneModalMsg.textContent = getTranslation('zoneModalSaveSuccess');
+                        zoneModalMsg.className = "muted ok";
+                    } catch (e) {
+                        zoneModalMsg.textContent = `${getTranslation('zoneModalSaveError')} ${e.message || e}`;
+                        zoneModalMsg.className = "muted err";
+                    }
+                });
+
+                // เปลี่ยนจาก zonesCol.doc(id).delete(); เป็นการอัปเดต isHidden
+                btnDeleteZone.addEventListener("click", async () => {
+                    const id = input.dataset.oldId;
+                    if (!confirm(`${t('areaModalConfirmDelete')} "${id}"?`)) return;
+                    try {
+                        // อัปเดต isHidden เป็น true แทนการลบจริง
+                        await zonesCol.doc(id).update({
+                            isHidden: true,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        zoneModalMsg.textContent = getTranslation('zoneModalDeleteSuccess');
+                        zoneModalMsg.className = "muted ok";
+                    } catch (e) {
+                        zoneModalMsg.textContent = `Error: ${e.message}`;
+                        zoneModalMsg.className = "muted err";
+                    }
+                });
+
+                row.appendChild(input);
+                row.appendChild(btnSaveZone);
+                row.appendChild(btnDeleteZone);
+                zoneListEl.appendChild(row);
+            });
+        }
+
+        function openZoneModal() {
+            // ปิด Modal อื่นๆ ก่อน (เช่น Add Bin Modal) เพื่อให้ Zone Modal แสดงทับ
+            closeEditModal(); // ปิด Modal แจ้งเตือนซ้ำ
+            zoneModalMsg.textContent = "";
+            zoneModalMsg.className = "muted";
+            newZoneNameEl.value = "";
+            zoneModalBackdrop.classList.add("show");
+        }
+
+        function closeZoneModal() {
+            zoneModalBackdrop.classList.remove("show");
+            renderZoneSelect();
+            // ถ้ามีการเปิด Add Bin Modal ค้างไว้ ให้มันยังคงอยู่
+            if (addBinBackdrop.classList.contains('show')) {
+                lockBodyScroll(true);
+            } else {
+                lockBodyScroll(false);
+            }
+        }
+
+
+        btnCloseZoneModal.addEventListener("click", closeZoneModal);
+        btnZoneDone.addEventListener("click", closeZoneModal);
+
+        btnAddZone.addEventListener("click", async () => {
+            const name = newZoneNameEl.value.trim();
+            if (!name) {
+                zoneModalMsg.textContent = getTranslation('zoneModalEmptyName');
+                zoneModalMsg.className = "muted err";
+                return;
+            }
+            try {
+                const docRef = zonesCol.doc(name);
+                const snap = await docRef.get();
+                if (snap.exists) {
+                    zoneModalMsg.textContent = getTranslation('zoneModalExists');
+                    zoneModalMsg.className = "muted err";
+                    return;
+                }
+                await docRef.set({
+                    name,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // --- สิ่งที่เพิ่ม/แก้ไข ---
+                newZoneNameEl.value = "";
+                zoneModalMsg.textContent = getTranslation('zoneModalAddSuccess');
+                zoneModalMsg.className = "muted ok";
+
+                // อัปเดต Dropdown ในฟอร์มหลักทันที
+                renderZoneSelect();
+                zoneEl.value = name; // เลือกเขตที่สร้างใหม่ให้เลย
+                await loadAreasForZone(name); // โหลดพื้นที่ (ซึ่งจะยังว่างอยู่)
+                binIdEl.value = ""; // เคลียร์ BIN ID รอเลือก Area
+                // -----------------------
+
+            } catch (e) {
+                zoneModalMsg.textContent = `${getTranslation('zoneModalAddError')} ${e.message || e}`;
+                zoneModalMsg.className = "muted err";
+            }
+        });
+
+
+        // ---------- Areas (Sub-zones) ----------
+
+        let areas = [];
+
+        function getAreasCollection(zoneId) {
+            if (!zoneId) return null;
+            return zonesCol.doc(zoneId).collection("areas");
+        }
+
+        async function loadAreasForZone(zoneId) {
+            areas = [];
+            if (!zoneId) {
+                areaEl.innerHTML = `<option value="">${t('areaSelectNoAreas')}</option>`;
+                areaEl.disabled = true;
+                return;
+            }
+
+            areaEl.disabled = true;
+            areaEl.innerHTML = `<option value="">${t('areaSelectLoading')}</option>`;
+
+            try {
+                const snap = await getAreasCollection(zoneId).orderBy("name").get();
+                areas = snap.docs.map(doc => ({
+                    id: doc.id,
+                    name: (doc.data() && doc.data().name) || doc.id
+                }));
+                renderAreaSelect();
+            } catch (e) {
+                console.error("loadAreasForZone error", e);
+                areaEl.innerHTML = `<option value="">${t('areaSelectDefault')}</option>`;
+                areaEl.disabled = false;
+                renderAreaSelect();
+            }
+
+        }
+
+        function renderAreaSelect() {
+            const selected = areaEl.value;
+            areaEl.innerHTML = "";
+            const opt0 = document.createElement("option");
+            opt0.value = "";
+
+            if (!zoneEl.value) {
+                opt0.textContent = t('areaSelectNoAreas');
+                areaEl.disabled = true;
+            } else if (!areas.length) {
+                opt0.textContent = t('areaSelectDefault');
+                areaEl.disabled = false;
+            } else {
+                opt0.textContent = t('areaSelectDefault');
+                areaEl.disabled = false;
+            }
+
+            areaEl.appendChild(opt0);
+
+            areas.forEach(a => {
+                const opt = document.createElement("option");
+                opt.value = a.id;
+                opt.textContent = a.name;
+                areaEl.appendChild(opt);
+            });
+
+            if (zoneEl.value) {
+                const addOpt = document.createElement("option");
+                addOpt.value = "_add_area_";
+                addOpt.textContent = t('areaSelectAdd');
+                areaEl.appendChild(addOpt);
+            }
+
+            // Restore selection if possible
+            if (selected && areaEl.querySelector(`option[value="${selected}"]`)) {
+                areaEl.value = selected;
+            } else {
+                areaEl.value = "";
+            }
+        }
+
+        function renderAreaFilterOptions() {
+            if (!filterAreaSelect) return;
+            const prev = filterAreaSelect.value;
+            filterAreaSelect.innerHTML = "";
+
+            const allOpt = document.createElement("option");
+            allOpt.value = "";
+            allOpt.textContent = t('filterAreaAll');
+            filterAreaSelect.appendChild(allOpt);
+
+            const selectedZone = filterZoneSelect.value;
+            if (selectedZone) {
+                const zoneAreas = areasCache.get(selectedZone) || [];
+                zoneAreas.forEach(a => {
+                    const opt = document.createElement("option");
+                    opt.value = a.id;
+                    opt.textContent = a.name;
+                    filterAreaSelect.appendChild(opt);
+                });
+                filterAreaSelect.disabled = false;
+            } else {
+                filterAreaSelect.disabled = true;
+            }
+
+            if (prev && areasCache.get(selectedZone)?.some(a => a.id === prev)) {
+                filterAreaSelect.value = prev;
+            } else {
+                filterAreaSelect.value = "";
+            }
+        }
+
+        function renderAreaList(zoneId, currentAreas) {
+            areaListEl.innerHTML = "";
+            if (!currentAreas.length) {
+                areaListEl.innerHTML = `<p class="muted">${t('areaModalNoAreas')}</p>`;
+                return;
+            }
+
+            currentAreas.forEach(a => {
+                const row = document.createElement("div");
+                row.className = "zone-row";
+
+                const input = document.createElement("input");
+                input.value = a.name;
+                input.dataset.oldId = a.id;
+
+                const btnSaveArea = document.createElement("button");
+                btnSaveArea.type = "button";
+                btnSaveArea.className = "primary";
+                btnSaveArea.textContent = t('areaModalSaveBtn');
+
+                const btnDeleteArea = document.createElement("button");
+                btnDeleteArea.type = "button";
+                btnDeleteArea.className = "danger";
+                btnDeleteArea.textContent = t('areaModalDeleteBtn');
+
+                btnSaveArea.addEventListener("click", async () => {
+                    const oldId = input.dataset.oldId;
+                    const newName = input.value.trim();
+                    if (!newName) {
+                        areaModalMsg.textContent = t('areaModalEmptyName');
+                        areaModalMsg.className = "muted err";
+                        return;
+                    }
+                    if (oldId === newName) {
+                        areaModalMsg.textContent = t('areaModalNoChange');
+                        areaModalMsg.className = "muted";
+                        return;
+                    }
+
+                    try {
+                        // Check if renaming is possible (no existing bins in this area)
+                        const binsSnap = await allBinsGroup.where("zone", "==", zoneId).where("area", "==", oldId).limit(1).get();
+                        if (!binsSnap.empty) {
+                            areaModalMsg.textContent = t('areaModalCannotChange');
+                            areaModalMsg.className = "muted err";
+                            return;
+                        }
+
+                        const areasColRef = getAreasCollection(zoneId);
+                        const oldDoc = areasColRef.doc(oldId);
+                        const newDoc = areasColRef.doc(newName);
+                        const oldData = (await oldDoc.get()).data() || {};
+
+                        // Check if new area name already exists
+                        const newSnap = await newDoc.get();
+                        if (newSnap.exists) {
+                            areaModalMsg.textContent = t('areaModalExists');
+                            areaModalMsg.className = "muted err";
+                            return;
+                        }
+
+                        // Firestore transaction to rename (create and delete)
+                        await newDoc.set({
+                            name: newName,
+                            createdAt: oldData.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        await oldDoc.delete();
+
+                        areaModalMsg.textContent = t('areaModalSaveSuccess');
+                        areaModalMsg.className = "muted ok";
+                    } catch (e) {
+                        areaModalMsg.textContent = `${t('areaModalSaveError')} ${e.message || e}`;
+                        areaModalMsg.className = "muted err";
+                    }
+                });
+
+                // เปลี่ยนจากการสั่ง delete() เป็น update({ isHidden: true })
+                btnDeleteArea.addEventListener("click", async () => {
+                    const id = input.dataset.oldId;
+                    if (!confirm(`${t('areaModalConfirmDelete')} "${id}"?`)) return;
+                    try {
+                        await getAreasCollection(zoneId).doc(id).update({
+                            isHidden: true,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        areaModalMsg.textContent = t('areaModalDeleteSuccess');
+                        areaModalMsg.className = "muted ok";
+                        // รีโหลดลิสต์ใน Modal
+                        const updatedSnap = await getAreasCollection(zoneId).where("isHidden", "==", false).get();
+                        // ... โค้ดแสดงผลใหม่ ...
+                    } catch (e) {
+                        areaModalMsg.textContent = `Error: ${e.message}`;
+                    }
+                });
+                row.appendChild(input);
+                row.appendChild(btnSaveArea);
+                row.appendChild(btnDeleteArea);
+                areaListEl.appendChild(row);
+            });
+        }
+
+        async function openAreaModal(zoneId) {
+            if (!zoneId) return;
+
+            activeZoneForArea = zoneId;
+            currentZoneNameEl.textContent = zoneId;
+            areaModalMsg.textContent = "";
+            areaModalMsg.className = "muted";
+            newAreaNameEl.value = "";
+
+            areaListEl.innerHTML = `<p class="muted">${t('areaSelectLoading')}...</p>`;
+
+            // Re-load areas just for the modal to get the latest
+            let currentAreas = [];
+            try {
+                const snap = await getAreasCollection(zoneId).orderBy("name").get();
+                currentAreas = snap.docs.map(doc => ({
+                    id: doc.id,
+                    name: (doc.data() && doc.data().name) || doc.id
+                }));
+            } catch (e) {
+                console.error("Error loading areas for modal:", e);
+            }
+            renderAreaList(zoneId, currentAreas);
+
+
+            areaModalBackdrop.classList.add("show");
+            lockBodyScroll(true); // ล็อก scroll หน้าเว็บ
+        }
+
+
+        function closeAreaModal() {
+            areaModalBackdrop.classList.remove("show");
+
+            // Reload the main form's area dropdown after closing the modal
+            if (zoneEl.value) {
+                loadAreasForZone(zoneEl.value);
+            }
+
+            activeZoneForArea = null;
+            lockBodyScroll(false); // ปลดล็อก scroll หน้าเว็บ
+        }
+
+
+        btnCloseAreaModal.addEventListener("click", closeAreaModal);
+        btnAreaDone.addEventListener("click", closeAreaModal);
+
+        btnAddArea.addEventListener("click", async () => {
+            const zoneId = activeZoneForArea;
+            const name = newAreaNameEl.value.trim();
+            if (!zoneId) return;
+            if (!name) {
+                areaModalMsg.textContent = t('areaModalEmptyName');
+                areaModalMsg.className = "muted err";
+                return;
+            }
+            try {
+                const areasColRef = getAreasCollection(zoneId);
+                const docRef = areasColRef.doc(name);
+                const snap = await docRef.get();
+                if (snap.exists) {
+                    areaModalMsg.textContent = t('areaModalExists');
+                    areaModalMsg.className = "muted err";
+                    return;
+                }
+                await docRef.set({
+                    name,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // --- ส่วนที่ปรับปรุง ---
+                newAreaNameEl.value = "";
+                areaModalMsg.textContent = t('areaModalAddSuccess');
+                areaModalMsg.className = "muted ok";
+
+                // อัปเดต Dropdown ในฟอร์มหลัก
+                await loadAreasForZone(zoneId);
+                areaEl.value = name; // เลือก Area ที่เพิ่งสร้างให้ทันที
+
+                // 🔥 สำคัญ: สั่งสร้าง BIN ID อัตโนมัติทันที (เช่น A001)
+                await assignBinIdForZone(zoneId, name);
+
+                // รีโหลดรายการใน Modal Area (ถ้ายังเปิดอยู่)
+                const updatedSnap = await getAreasCollection(zoneId).orderBy("name").get();
+                const updatedAreas = updatedSnap.docs.map(doc => ({
+                    id: doc.id,
+                    name: (doc.data() && doc.data().name) || doc.id
+                }));
+                renderAreaList(zoneId, updatedAreas);
+                // -----------------------
+
+            } catch (e) {
+                areaModalMsg.textContent = `${t('areaModalAddError')} ${e.message || e}`;
+                areaModalMsg.className = "muted err";
+            }
+        });
+
+        // ---------- BIN ID ----------
+        function pad3(n) {
+            return n.toString().padStart(3, "0");
+        }
+
+        async function assignBinIdForZone(zoneName, areaName) {
+            if (!zoneName || !areaName) return "";
+
+            // 1. ดึงอักษรตัวแรกของ Zone (ตัวพิมพ์ใหญ่) เช่น Yala -> Y
+            const zonePrefix = zoneName.charAt(0).toUpperCase();
+
+            // 2. รูปแบบ Prefix ของรหัสที่จะเช็คใน Area นั้นๆ เช่น Betong_Y
+            const fullPrefix = `${areaName}_${zonePrefix}`;
+
+            try {
+                const binsCol = db
+                    .collection("smartbins")
+                    .doc(zoneName)
+                    .collection("bin_data");
+
+                // 3. Query เฉพาะถังที่อยู่ใน Zone และ Area เดียวกัน
+                const snap = await binsCol
+                    .where("zone", "==", zoneName)
+                    .where("area", "==", areaName)
+                    .get();
+
+                const usedNumbers = new Set();
+                snap.forEach(doc => {
+                    const data = doc.data() || {};
+                    const existingBinId = (data.binId || doc.id || "").toString();
+
+                    // ตรวจสอบ pattern เช่น Betong_Y001 -> ดึง 001 ออกมา
+                    const regex = new RegExp(`^${fullPrefix}(\\d+)$`);
+                    const match = regex.exec(existingBinId);
+                    if (match) {
+                        const num = Number(match[1]);
+                        if (!Number.isNaN(num)) {
+                            usedNumbers.add(num);
+                        }
+                    }
+                });
+
+                // 4. หาเลขถัดไปที่ยังว่างอยู่
+                let candidate = 1;
+                while (usedNumbers.has(candidate)) candidate++;
+
+                // 5. ประกอบร่างเป็น Betong_Y001
+                const finalBinId = fullPrefix + pad3(candidate);
+                binIdEl.value = finalBinId; // แสดงใน Input ของ Form
+                return finalBinId;
+            } catch (err) {
+                console.error("assignBinIdForZone error", err);
+                const fallback = fullPrefix + "001";
+                binIdEl.value = fallback;
+                return fallback;
+            }
+        }
+
+        zoneEl.addEventListener("change", async () => {
+            const z = zoneEl.value;
+
+            if (z === "_add_zone_") {
+                zoneEl.value = "";
+                areaEl.value = "";
+                areaEl.disabled = true;
+                binIdEl.value = "";
+                setStatusForm("", "");
+                openZoneModal(); // Open Zone Modal first
+                return;
+            }
+
+            if (!z) {
+                areaEl.innerHTML = `<option value="">${t('areaSelectNoAreas')}</option>`;
+                areaEl.disabled = true;
+                binIdEl.value = "";
+                setStatusForm(t('statusSelectZone'), "err");
+                return;
+            }
+
+            setStatusForm("", "");
+            await loadAreasForZone(z);
+
+            // Re-assign BIN ID only if area is already selected/available
+            if (areaEl.value && areaEl.value !== "_add_area_") {
+                await assignBinIdForZone(z, areaEl.value);
+            } else {
+                binIdEl.value = ""; // Clear if area is not selected/selected is add
+            }
+        });
+
+        areaEl.addEventListener("change", async () => {
+            const z = zoneEl.value;
+            const a = areaEl.value;
+
+            if (a === "_add_area_") {
+                areaEl.value = "";
+                binIdEl.value = "";
+                setStatusForm("", "");
+                openAreaModal(z); // Open Area Modal
+                return;
+            }
+
+            if (!z) {
+                setStatusForm(t('statusSelectZone'), "err");
+                binIdEl.value = "";
+                return;
+            }
+
+            if (!a) {
+                setStatusForm(t('statusSelectArea'), "err");
+                binIdEl.value = "";
+                return;
+            }
+
+            setStatusForm("", "");
+            await assignBinIdForZone(z, a);
+        });
+
+        rfidEl.addEventListener("input", () => {
+            const rfidValue = rfidEl.value.trim().toUpperCase();
+            if (!rfidValue) {
+                duplicatedRfidDetected = false;
+                lastRfidChecked = "";
+                return;
+            }
+            if (rfidCheckTimer) clearTimeout(rfidCheckTimer);
+            rfidCheckTimer = setTimeout(async () => {
+                const currentValue = rfidEl.value.trim().toUpperCase();
+                if (!currentValue || currentValue === lastRfidChecked) return;
+                lastRfidChecked = currentValue;
+                try {
+                    const dup = await checkDuplicateRfidRealtime(currentValue);
+                    if (dup) {
+                        duplicatedRfidDetected = true;
+                        showDuplicateRfidModal(dup, currentValue);
+                    }
+                } catch (e) {
+                    console.warn("RFID duplicate check failed", e);
+                }
+            }, 120);
+        });
+
+        rfidEl.addEventListener('blur', async () => {
+            const rfidValue = rfidEl.value.trim().toUpperCase();
+            if (!rfidValue) return;
+            if (rfidValue === lastRfidChecked) return;
+
+            const dup = await checkDuplicateRfidRealtime(rfidValue);
+            if (dup) {
+                duplicatedRfidDetected = true;
+                lastRfidChecked = rfidValue;
+                showDuplicateRfidModal(dup, rfidValue);
+            }
+        });
+
+        // ---------- Map Picker ----------
+        let mapInstance = null;
+        let mapMarker = null;
+        let mapSelected = null;
+
+        function setMapStatus(text, type) {
+            if (!mapStatusEl) return;
+            mapStatusEl.textContent = text || "";
+            mapStatusEl.className = "muted" + (type === "ok" ? " ok" : type === "err" ? " err" : "");
+        }
+
+        function setMapMarker(latlng) {
+            if (!mapInstance) return;
+            mapSelected = latlng;
+            if (!mapMarker) {
+                mapMarker = L.marker(latlng, { draggable: true }).addTo(mapInstance);
+                mapMarker.on("dragend", () => {
+                    const pos = mapMarker.getLatLng();
+                    mapSelected = pos;
+                    setMapStatus(`${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`, "");
+                });
+            } else {
+                mapMarker.setLatLng(latlng);
+            }
+            setMapStatus(`${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`, "");
+        }
+
+        function ensureMap() {
+            if (!binMapEl || !window.L) return;
+            if (!mapInstance) {
+                mapInstance = L.map(binMapEl, { center: [13.7563, 100.5018], zoom: 12 });
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    maxZoom: 19,
+                    attribution: "? OpenStreetMap"
+                }).addTo(mapInstance);
+                mapInstance.on("click", e => {
+                    setMapMarker(e.latlng);
+                });
+            }
+        }
+
+        function openMapModal() {
+            if (!mapModalBackdrop) return;
+            if (!window.L) {
+                setStatusForm(t("mapLibMissing"), "err");
+                return;
+            }
+            mapModalBackdrop.classList.add("show");
+            lockBodyScroll(true);
+            mapSelected = null;
+            setMapStatus("", "");
+            ensureMap();
+            setTimeout(() => {
+                if (mapInstance) mapInstance.invalidateSize();
+            }, 80);
+
+            const lat = parseFloat(latEl.value);
+            const lng = parseFloat(lngEl.value);
+            if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+                const pos = { lat, lng };
+                mapInstance.setView([lat, lng], 16);
+                setMapMarker(pos);
+                return;
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const { latitude, longitude } = pos.coords;
+                    mapInstance.setView([latitude, longitude], 15);
+                }, () => {
+                    mapInstance.setView([13.7563, 100.5018], 12);
+                }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
+            }
+        }
+
+        function closeMapModal() {
+            if (!mapModalBackdrop) return;
+            mapModalBackdrop.classList.remove("show");
+            // keep scroll locked if add-bin modal is still open
+            if (!addBinBackdrop.classList.contains("show")) {
+                lockBodyScroll(false);
+            }
+        }
+
+        function applyMapSelection() {
+            const point = mapSelected || (mapMarker ? mapMarker.getLatLng() : null);
+            if (!point) {
+                setMapStatus(t("mapNoPoint"), "err");
+                return;
+            }
+            latEl.value = point.lat.toFixed(6);
+            lngEl.value = point.lng.toFixed(6);
+            latEl.dispatchEvent(new Event("input"));
+            lngEl.dispatchEvent(new Event("input"));
+            closeMapModal();
+        }
+
+        if (btnPickMap) btnPickMap.addEventListener("click", openMapModal);
+        if (btnMapCancel) btnMapCancel.addEventListener("click", closeMapModal);
+        if (btnMapConfirm) btnMapConfirm.addEventListener("click", applyMapSelection);
+        if (mapModalBackdrop) {
+            mapModalBackdrop.addEventListener("click", e => {
+                if (e.target === mapModalBackdrop) closeMapModal();
+            });
+        }
+        // ---------- clear form ----------
+        function clearForm() {
+            duplicatedRfidDetected = false;   // ✅ เพิ่มตรงนี้
+            binForm.reset();
+            binIdEl.value = "";
+            ownerEl.classList.remove("error");
+            zoneEl.classList.remove("error");
+            areaEl.classList.remove("error");
+            macAddressEl.classList.remove("error"); // 🚨 NEW
+            areaEl.innerHTML = `<option value="">${t('areaSelectNoAreas')}</option>`;
+            areaEl.disabled = true;
+            setStatusForm("", "");
+
+            // Hide fields when clearing form
+            binForm.classList.remove('rfid-entered');
+        }
+
+        btnReset.addEventListener("click", async () => {
+            await releaseConfirmedMac();
+            detachRfidListener();
+            clearForm();
+        });
+
+        // 🚨 NEW: Event listeners for MAC Address confirmation
+        if (macAddressEl && btnConfirmMac) {
+
+            // 1️⃣ ตรวจ MAC ซ้ำ เมื่อเลือกจาก dropdown
+            macAddressEl.addEventListener("change", async () => {
+                const mac = macAddressEl.value;
+                if (!mac) return;
+
+                const snap = await db
+                    .collectionGroup("bin_data")
+                    .where("macAddress", "==", mac)
+                    .where("isHidden", "==", false)
+                    .limit(1)
+                    .get();
+
+                if (!snap.empty) {
+                    const d = snap.docs[0].data();
+
+                    showDuplicateMacModal({
+                        mac: mac,
+                        binId: d.binId,
+                        zone: d.zone,
+                        area: d.area || "—",
+                        owner: d.ownerName || "—"
+                    });
+
+                    macAddressEl.value = "";
+                    await setBoardLed(mac, "OFF"); // 🔴 ดับไฟ
+                    btnConfirmMac.disabled = true;
+                    return;
+                }
+
+                // 🟢 ถ้าไม่ซ้ำ → เปิดให้กดยืนยัน
+                btnConfirmMac.disabled = false;
+            });
+
+            // 2️⃣ 🔥 เปิดไฟบอร์ด เมื่อกด “ยืนยันอุปกรณ์”
+            btnConfirmMac.addEventListener("click", async () => {
+                const mac = macAddressEl.value;
+                if (!mac) return;
+
+                confirmedMacTemp = mac;
+
+                const ref = rtdb.ref(`esp32_devices/${mac}/currentAdmin`);
+
+                await ref.transaction(current => {
+                    if (current) return;
+                    return window.ADMIN_AUTH.uid;
+                }, async (error, committed) => {
+                    if (!committed) {
+                        alert(t('errorMacInUse'));
+                        return;
+                    }
+
+                    // 🔥🔥🔥 เพิ่มตรงนี้
+                    await rtdb
+                        .ref(`admin_rfid_active/${window.ADMIN_AUTH.uid}`)
+                        .set(true);
+
+                    macAddressEl.disabled = true;
+                    btnConfirmMac.classList.add("confirmed");
+                    btnConfirmMac.disabled = true;
+
+                    attachRfidListener();
+                    setBoardLed(mac, "ON");
+                });
+            });
+        }
+        // END NEW
+
+        // ---------- submit (เพิ่ม MAC Address ในการบันทึก) ----------
+        binForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            // =========================
+            // ✅ VALIDATION แบบการ์ดแจ้งเตือน
+            // =========================
+            const errors = [];
+
+            // ---------- MAC ----------
+            const macAddress = macAddressEl.value.trim();
+            if (!macAddress) {
+                errors.push(t('errorSelectMac'));
+                macAddressEl.classList.add("error");
+            } else if (confirmedMacTemp !== macAddress) {
+                errors.push(t('errorConfirmMac'));
+                macAddressEl.classList.add("error");
+            } else {
+                macAddressEl.classList.remove("error");
+            }
+
+            // ---------- RFID ----------
+            const rfid = rfidEl.value.trim().toUpperCase();
+            if (!rfid) {
+                errors.push(t('errorMissingRfid'));
+                rfidEl.classList.add("error");
+            } else {
+                rfidEl.classList.remove("error");
+            }
+
+            // ---------- Zone ----------
+            const zone = zoneEl.value;
+            if (!zone || zone === "_add_zone_") {
+                errors.push(t('errorSelectZone'));
+                zoneEl.classList.add("error");
+            } else {
+                zoneEl.classList.remove("error");
+            }
+
+            // ---------- Area ----------
+            const area = areaEl.value;
+            if (!area || area === "_add_area_") {
+                errors.push(t('errorSelectArea'));
+                areaEl.classList.add("error");
+            } else {
+                areaEl.classList.remove("error");
+            }
+
+            // ---------- Owner ----------
+            const ownerUsername = ownerEl.value;
+            if (!ownerUsername) {
+                errors.push(t('errorSelectOwner'));
+                ownerEl.classList.add("error");
+            } else {
+                ownerEl.classList.remove("error");
+            }
+
+            // ❌ ถ้ามี error → แสดงการ์ด แล้วหยุด
+            if (errors.length > 0) {
+                showFormErrorCard(errors);
+                return;
+            }
+
+            try {
+                const rfid = rfidEl.value.trim().toUpperCase() || null;
+                if (!rfid) {
+                    rfidEl.classList.add("error");
+                    setStatusForm(t('errorMissingRfid'), "err");
+                    return;
+                } else {
+                    rfidEl.classList.remove("error");
+                }
+
+                const dup = await checkDuplicateRfidRealtime(rfid);
+                if (dup) {
+                    duplicatedRfidDetected = true;
+                    showDuplicateRfidModal(dup, rfid);
+                    return;
+                }
+                if (duplicatedRfidDetected) {
+                    setStatusForm(t('errorDuplicateRfid'), "err");
+                    return;
+                }
+
+                const zone = zoneEl.value.trim();
+                if (!zone || zone === "_add_zone_") {
+                    zoneEl.classList.add("error");
+                    setStatusForm(t('statusSelectZone'), "err");
+                    return;
+                } else {
+                    zoneEl.classList.remove("error");
+                }
+
+                const area = areaEl.value.trim();
+                if (!area || area === "_add_area_") {
+                    areaEl.classList.add("error");
+                    setStatusForm(t('statusSelectArea'), "err");
+                    return;
+                } else {
+                    areaEl.classList.remove("error");
+                }
+
+
+                const ownerUsername = ownerEl.value.trim();
+                if (!ownerUsername) {
+                    ownerEl.classList.add("error");
+                    setStatusForm(t('statusSelectOwner'), "err");
+                    return;
+                } else {
+                    ownerEl.classList.remove("error");
+                }
+
+                // 🚨 NEW: MAC Address Validation
+                const macAddress = macAddressEl.value.trim() || null;
+
+                // ❌ ยังไม่ได้เลือก MAC
+                if (!macAddress) {
+                    macAddressEl.classList.add("error");
+                    setStatusForm(t('errorSelectMac'), "err");
+                    return;
+                }
+
+                // ❌ เลือกแล้ว แต่ยังไม่กดยืนยัน
+                if (confirmedMacTemp !== macAddress) {
+                    macAddressEl.classList.add("error");
+                    setStatusForm(t('errorConfirmMac'), "err");
+                    return;
+                }
+
+                // ✅ ผ่าน
+                macAddressEl.classList.remove("error");
+
+                // END NEW
+
+                let binId = binIdEl.value.trim();
+                if (!binId) {
+                    binId = await assignBinIdForZone(zone, area);
+                }
+
+                const lng = lngEl.value ? Number(lngEl.value) : null;
+                const lat = latEl.value ? Number(latEl.value) : null;
+                const details = detailsEl.value.trim() || null;
+
+                const ownerInfo = ownerMap.get(ownerUsername);
+                const ownerName = ownerInfo?.fullName || ownerUsername;
+
+                const zoneDocRef = db.collection("smartbins").doc(zone);
+
+                // ค้นหาบรรทัดที่เตรียมข้อมูล data ก่อนบันทึก และแก้ไขดังนี้:
+                const data = {
+                    binId, // ค่าที่ได้จากฟังก์ชันใหม่ (เช่น Betong_Y001)
+                    zone,
+                    area,
+                    ownerUsername,
+                    ownerName,
+                    RFID: rfid,
+                    macAddress,
+                    locked: true,
+                    lng,
+                    lat,
+                    details,
+                    isHidden: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                setStatusForm(t('statusSaving'), "");
+
+                // บันทึกลง bin_data โดยใช้ binId ใหม่เป็นชื่อ Document
+                await zoneDocRef
+                    .collection("bin_data")
+                    .doc(binId) // จะได้ path: smartbins/{zone}/bin_data/Betong_Y001
+                    .set(data, { merge: false });
+
+                setStatusForm(`${t('statusSaveSuccess')} (${binId})`, "ok");
+                // ✅ บอกบอร์ดว่าผูกถาวรแล้ว
+                await rtdb
+                    .ref(`esp32_devices/${macAddress}/bound`)
+                    .set(true);
+                // 🔓 ปล่อย admin lock ทันทีหลังผูกสำเร็จ
+                await rtdb
+                    .ref(`esp32_devices/${macAddress}/currentAdmin`)
+                    .remove();
+
+                // 🔥 ปิดโหมดสแกน RFID ของ admin (สำคัญมาก)
+                await rtdb
+                    .ref(`admin_rfid_active/${window.ADMIN_AUTH.uid}`)
+                    .remove();
+
+
+                confirmedMacTemp = null;
+
+
+                confirmedMacTemp = null;
+                btnConfirmMac.classList.remove("confirmed");
+
+                setTimeout(() => {
+                    closeAddModal();
+                }, 600);
+            } catch (err) {
+                console.error(err);
+                setStatusForm(`${t('statusSaveError')} ${errStr(err)}`, "err");
+            }
+        });
+
+        // ---------- bins list ----------
+        // ---------- RFID Duplicate Check (Firestore) ----------
+        async function checkDuplicateRfidRealtime(rfidValue) {
+            try {
+                const snap = await db
+                    .collectionGroup("bin_data")
+                    .where("RFID", "==", rfidValue)
+                    .limit(5)
+                    .get();
+
+                if (snap.empty) return null;
+
+                for (const doc of snap.docs) {
+                    const d = doc.data() || {};
+                    if (d.isHidden === true) continue; // ✅ กรองใน JS
+
+                    return {
+                        binId: d.binId || doc.id,
+                        zone: d.zone,
+                        area: d.area || "—",
+                        owner: d.ownerName || d.ownerUsername || "—",
+                        updatedAt: d.updatedAt?.toDate?.().toLocaleString() || "—"
+                    };
+                }
+
+                return null;
+            } catch (e) {
+                console.error("checkDuplicateRfidRealtime error", e);
+                return null;
+            }
+        }
+
+
+        let zoneUnsubMap = {};
+        let areasCache = new Map(); // Cache to store areas per zone
+        let bins = [];
+
+        function renderBinsTable() {
+            binsRowsEl.innerHTML = "";
+
+            let filtered = bins.slice()
+                .filter(item => item.data?.isHidden !== true); // 🔥 เพิ่มบรรทัดนี้
+
+
+            const zoneFilterVal = filterZoneSelect.value;
+            if (zoneFilterVal) {
+                filtered = filtered.filter(item => item.zone === zoneFilterVal);
+                const areaFilterVal = filterAreaSelect.value;
+                if (areaFilterVal) {
+                    filtered = filtered.filter(item => (item.data.area || "") === areaFilterVal);
+                }
+            }
+
+
+            const search = filterBinText.value.trim().toLowerCase();
+            if (search) {
+                filtered = filtered.filter(item => {
+                    const d = item.data || {};
+                    const binId = (d.binId || item.binId || "").toString().toLowerCase();
+                    const ownerName = (d.ownerName || "").toString().toLowerCase();
+                    const ownerUsername = (d.ownerUsername || "").toString().toLowerCase();
+                    return (
+                        binId.includes(search) ||
+                        ownerName.includes(search) ||
+                        ownerUsername.includes(search)
+                    );
+                });
+            }
+
+            filtered.sort((a, b) => b.createdAtMs - a.createdAtMs);
+
+            if (!filtered.length) {
+                binsRowsEl.innerHTML = `<tr><td colspan="9" class="muted">${t('noData')}</td></tr>`;
+                setBinsStatus("", "");
+                return;
+            }
+
+            filtered.forEach(item => {
+                const d = item.data || {};
+                const zone = d.zone || item.zone;
+                const area = d.area || "—"; // New Area
+                const binId = d.binId || item.binId;
+                const rfidVal = d.RFID || "—";
+                const lat = (d.lat !== undefined && d.lat !== null) ? d.lat : "—";
+                const lng = (d.lng !== undefined && d.lng !== null) ? d.lng : "—";
+                const det = d.details || "—";
+                const ownerName = d.ownerName || d.owner || "";
+                const ownerUsername = d.ownerUsername || "";
+                const ownerDisplay = ownerName || ownerUsername || "—";
+                const updatedAt = item.updatedAt ? item.updatedAt.toLocaleString() : "—";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${zone}</td>
+                    <td>${area}</td> <td><code>${binId}</code></td>
+                    <td>${ownerDisplay}</td>
+                    <td>${rfidVal}</td>
+                    <td>${lat}, ${lng}</td>
+                    <td>${det}</td>
+                    <td class="muted">${updatedAt}</td>
+                    <td>
+                        <div class="bin-actions">
+                            <button class="icon-btn icon-delete-btn"
+                                            type="button"
+                                            onclick="deleteBin('${zone}','${binId}')"
+                                            aria-label="${t('btnDelete')}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7H3V5h4V4a1 1 0 0 1 1-1zm1 2v1h4V5h-4zm-2 4h2v9H8V9zm4 0h2v9h-2V9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                binsRowsEl.appendChild(tr);
+            });
+
+            setBinsStatus(`${t('showing')} ${filtered.length} ${t('items')}`, "ok");
+        }
+
+        filterBinText.addEventListener("input", renderBinsTable);
+        filterZoneSelect.addEventListener("change", () => {
+            loadAreasForZoneFilter(filterZoneSelect.value);
+            renderBinsTable();
+        });
+        filterAreaSelect.addEventListener("change", renderBinsTable);
+
+        // Load areas for filter separately to keep all options
+        let areaFilterUnsubMap = {};
+        async function loadAreasForZoneFilter(zoneId) {
+            filterAreaSelect.innerHTML = `<option value="">${t('filterAreaAll')}</option>`;
+            areasCache.clear();
+
+            // Clear all existing listeners
+            Object.values(areaFilterUnsubMap).forEach(fn => fn && fn());
+            areaFilterUnsubMap = {};
+
+            if (!zoneId) {
+                filterAreaSelect.disabled = true;
+                return;
+            }
+
+            filterAreaSelect.disabled = true;
+            filterAreaSelect.innerHTML = `<option value="">${t('areaSelectLoading')}</option>`;
+
+            try {
+                const areasColRef = getAreasCollection(zoneId);
+                if (!areasColRef) return;
+
+                const unsub = areasColRef.orderBy("name").onSnapshot(snap => {
+                    const zoneAreas = snap.docs.map(doc => ({
+                        id: doc.id,
+                        name: (doc.data() && doc.data().name) || doc.id
+                    }));
+                    areasCache.set(zoneId, zoneAreas);
+
+                    filterAreaSelect.innerHTML = `<option value="">${t('filterAreaAll')}</option>`;
+                    zoneAreas.forEach(a => {
+                        const opt = document.createElement("option");
+                        opt.value = a.id;
+                        opt.textContent = a.name;
+                        filterAreaSelect.appendChild(opt);
+                    });
+                    filterAreaSelect.disabled = false;
+                    renderBinsTable();
+                });
+                areaFilterUnsubMap[zoneId] = unsub;
+            } catch (e) {
+                console.error("loadAreasForZoneFilter error", e);
+                filterAreaSelect.innerHTML = `<option value="">${t('filterAreaAll')}</option>`;
+                filterAreaSelect.disabled = true;
+                renderBinsTable();
+            }
+        }
+
+
+        zonesCol.orderBy("name").onSnapshot(snap => {
+            zones = [];
+            // Unsubscribe from old bin listeners
+            Object.values(zoneUnsubMap).forEach(fn => fn && fn());
+            zoneUnsubMap = {};
+            bins = [];
+
+            snap.forEach(doc => {
+                const d = doc.data() || {};
+                zones.push({
+                    id: doc.id,
+                    name: d.name || doc.id
+                });
+            });
+
+            renderZoneSelect();
+            renderZoneList();
+            renderZoneFilterOptions();
+            loadAreasForZoneFilter(filterZoneSelect.value); // Reload area filter options
+
+            if (initialLoadPending && initialZonesCount === 0) {
+                initialZonesCount = zones.length;
+                if (initialZonesCount === 0) {
+                    hideLoaderOnce();
+                }
+            }
+
+            if (zones.length) {
+                setBinsStatus(t('loading'), "");
+            } else {
+                setBinsStatus("", "");
+            }
+
+            zones.forEach(z => {
+                const col = db
+                    .collection("smartbins")
+                    .doc(z.id)
+                    .collection("bin_data")
+                    .where("isHidden", "==", false);
+
+                const unsub = col.onSnapshot(zoneSnap => {
+                    bins = bins.filter(b => b.zone !== z.id);
+
+                    zoneSnap.forEach(doc => {
+                        const d = doc.data() || {};
+
+                        const createdAt =
+                            d.createdAt && d.createdAt.toMillis
+                                ? d.createdAt.toMillis()
+                                : 0;
+
+                        const updatedAt =
+                            d.updatedAt && d.updatedAt.toDate
+                                ? d.updatedAt.toDate()
+                                : null;
+
+                        bins.push({
+                            zone: z.id,
+                            binId: doc.id,
+                            data: d,
+                            createdAtMs: createdAt,
+                            updatedAt
+                        });
+                    });
+
+                    renderBinsTable();
+                    if (initialLoadPending && initialZonesCount > 0 && !initialBinZones.has(z.id)) {
+                        initialBinZones.add(z.id);
+                        if (initialBinZones.size >= initialZonesCount) {
+                            hideLoaderOnce();
+                        }
+                    }
+                });
+
+                zoneUnsubMap[z.id] = unsub;
+            });
+        });
+
+        // ---------- Edit modal ----------
+        function openEditModal() {
+            // ปิด Modal จัดการ Zone/Area ก่อนเปิด Edit Modal
+            closeZoneModal(false);
+            closeAreaModal(false);
+
+            editModalBackdrop.classList.add("show");
+            lockBodyScroll(true); // ล็อก scroll หน้าเว็บ
+        }
+
+        // เก็บโครงสร้างฟอร์มเดิมของ Edit Modal ไว้
+        const originalEditModalContent = editModal.innerHTML;
+
+        function closeEditModal() {
+            editModalBackdrop.classList.remove("show");
+
+            // คืนค่าโครงสร้าง Modal กลับไปเป็น Edit Form (สำคัญมาก)
+            editModal.innerHTML = originalEditModalContent;
+
+            // Re-map elements in case they were removed/replaced
+            const editForm = $("editForm");
+            if (editForm) {
+                editForm.removeEventListener("submit", editFormSubmitHandler);
+                editForm.addEventListener("submit", editFormSubmitHandler);
+            }
+
+            const btnCancel = $("editCancel");
+            if (btnCancel) {
+                btnCancel.removeEventListener("click", closeEditModal);
+                btnCancel.addEventListener("click", closeEditModal);
+            }
+
+            // ทำความสะอาดอื่นๆ
+            editForm.reset();
+            setBinsStatus("", "");
+            editMsg.textContent = "";
+            editMsg.className = "muted";
+            lockBodyScroll(false);
+        }
+        // ---------- Duplicate RFID Modal ----------
+        function showDuplicateRfidModal(info, rfid) {
+            // ปิดหน้าต่างอื่นๆ ทั้งหมด (ถ้ามี)
+            closeAddModal(false);
+            closeZoneModal();
+            closeAreaModal();
+            changeLanguage(currentLang, true); // 🔥
+
+
+            const modalHtml = `
+        <div class="modal-header">
+            <div class="modal-title">${t('duplicateModalTitle')}</div>
+            <button type="button" class="modal-close" id="btnDupCloseTop">✕</button>
+        </div>
+        <div style="padding: 15px 0;">
+            <div style="border:1.5px solid #ef4444; background:#fef2f2; border-radius:12px; padding:16px;">
+                <p style="font-weight:bold; color:#991b1b; margin-bottom:10px; font-size:1.1rem;">
+${t('duplicateRfidTitle')}: ${rfid}
+                </p>
+                <div style="font-size:0.95rem; color:#451a03; line-height:1.6;">
+<p><b>${t('labelBin')}:</b> ${info.binId}</p>
+<p><b>${t('labelZoneArea')}:</b> ${info.zone} (${info.area})</p>
+<p><b>${t('labelOwner')}:</b> ${info.owner}
+    </p>
+                </div>
+                <p style="margin-top:12px; font-size:0.85rem; color:#b91c1c; font-style:italic;">
+                    * ${t('duplicateRfidHint')}
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="primary" id="btnScanNew" style="width:100%">${t('btnScanNew')}</button>
+        </div>
+    `;
+
+            // ใช้พื้นที่ของ editModal ในการแสดงผลแจ้งเตือน
+            editModal.innerHTML = modalHtml;
+
+            // ผูก Event ปุ่มปิด
+            document.getElementById("btnScanNew").onclick = closeDuplicateModal;
+            document.getElementById("btnDupCloseTop").onclick = closeDuplicateModal;
+
+            editModalBackdrop.classList.add("show");
+            lockBodyScroll(true);
+        }
+
+        function showDeleteConfirmModal({ zone, area, binId }, onConfirm) {
+            closeEditModal();
+            closeAddModal(false);
+
+            const modalHtml = `
+        <div class="modal-header">
+            <div class="modal-title" style="color:#dc2626">
+                🗑️ ${t('confirmDeleteTitle')}
+            </div>
+            <button type="button" class="modal-close" id="btnDelClose">✕</button>
+        </div>
+
+        <div style="padding:16px">
+            <div style="border:1.5px solid #ef4444; background:#fef2f2; border-radius:12px; padding:16px">
+                <p style="font-weight:bold; margin-bottom:8px">
+                    ${t('confirmDeleteBin')}
+                </p>
+                <p><b>BIN:</b> ${binId}</p>
+                <p><b>${t('labelZone')}</b> ${zone}</p>
+                <p><b>${t('labelArea')}:</b> ${area}</p>
+
+                <p style="margin-top:10px; font-size:0.85rem; color:#991b1b">
+                    * ${t('confirmDeleteHint')}
+                </p>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="display:flex; gap:8px">
+            <button class="ghost" id="btnDelCancel">${t('btnCancel')}</button>
+            <button class="primary" id="btnDelConfirm">${t('btnDelete')}</button>
+        </div>
+    `;
+
+            editModal.innerHTML = modalHtml;
+            editModalBackdrop.classList.add("show");
+            lockBodyScroll(true);
+
+            document.getElementById("btnDelCancel").onclick = closeEditModal;
+            document.getElementById("btnDelClose").onclick = closeEditModal;
+
+            document.getElementById("btnDelConfirm").onclick = async () => {
+                await onConfirm();
+                closeEditModal();
+            };
+        }
+
+
+        function showDuplicateMacModal(info) {
+            // ปิด Modal อื่นๆ เพื่อไม่ให้ซ้อนกัน
+            closeEditModal();
+
+            const modalHtml = `
+        <div class="modal-header">
+            <div class="modal-title" style="color:#dc2626">❌ ${t('duplicateMacTitle')}</div>
+            <button type="button" class="modal-close" onclick="closeEditModal()">✕</button>
+        </div>
+        <div style="padding: 15px 0;">
+            <div style="border:1.5px solid #ef4444; background:#fef2f2; border-radius:12px; padding:16px;">
+                <p style="font-weight:bold; color:#991b1b; margin-bottom:10px;">
+                    ${t('duplicateMacDesc')}
+                </p>
+                <div style="font-size:0.95rem; color:#451a03; line-height:1.6;">
+                    <p><b>MAC:</b> ${info.mac}</p>
+                    <p><b>${t('labelBin')}:</b> ${info.binId}</p>
+                    <p><b>${t('labelZoneArea')}:</b> ${info.zone} (${info.area})</p>
+                    <p><b>${t('labelOwner')}:</b> ${info.owner}</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="primary" onclick="closeEditModal()" style="width:100%">${t('btnOk')}</button>
+        </div>
+    `;
+
+            // แสดงผลในพื้นที่ editModal (ซึ่งเราใช้เป็นกล่องแจ้งเตือนกลาง)
+            editModal.innerHTML = modalHtml;
+
+            // เปิดแสดงผล
+            editModalBackdrop.classList.add("show");
+            lockBodyScroll(true);
+        }
+
+
+        async function closeDuplicateModal() {
+            duplicatedRfidDetected = false;
+            editModalBackdrop.classList.remove("show");
+            lockBodyScroll(false);
+
+            // คืนโครงสร้างฟอร์มแก้ไข (Edit Form) กลับมาเป็นปกติ
+            editModal.innerHTML = originalEditModalContent;
+
+            // เคลียร์ค่าที่ช่องสแกน (เผื่อมีค้าง) และโฟกัสไปที่ช่อง RFID เพื่อรอการสแกนใหม่
+            rfidEl.value = "";
+            binForm.classList.remove("rfid-entered");
+
+            try {
+                await releaseConfirmedMac();
+            } catch (e) {
+                console.warn("Release MAC failed", e);
+            }
+            detachRfidListener();
+            clearForm();
+            setTimeout(() => {
+                rfidEl.focus();
+            }, 300);
+        }
+
+        btnEditClose.addEventListener("click", closeEditModal);
+        btnEditCancel.addEventListener("click", closeEditModal);
+
+        // ใช้ handler แยกสำหรับ Edit Form Submit
+        const editFormSubmitHandler = async e => {
+            e.preventDefault();
+            try {
+                const zone = editDocZone.value;
+                const binId = editDocBinId.value;
+                if (!zone || !binId) {
+                    editMsg.textContent = t('editSaveError');
+                    editMsg.className = "muted err";
+                    return;
+                }
+                const rfid = editRfid.value.trim() || null;
+                const lng = editLng.value ? Number(editLng.value) : null;
+                const lat = editLat.value ? Number(editLat.value) : null;
+                const det = document.getElementById("editDetails").value.trim() || null; // ต้องอ้างอิงจาก ID เดิม
+
+                const docRef = db
+                    .collection("smartbins")
+                    .doc(zone)
+                    .collection("bin_data")
+                    .doc(binId);
+
+                const snapOld = await docRef.get();
+                if (snapOld.exists && snapOld.data().locked === true) {
+                    throw new Error("BIN นี้ถูกล็อก ไม่สามารถแก้ไข RFID หรือ MAC ได้");
+                }
+
+                // ✅ ตรวจ RFID ซ้ำ (ถ้าไม่ใช่ถังตัวเอง)
+                if (rfid) {
+                    const dup = await checkDuplicateRfidRealtime(rfid);
+                    if (dup && dup.binId !== binId) {
+                        throw new Error("RFID นี้ถูกใช้กับถังอื่นแล้ว");
+                    }
+                }
+
+
+                const data = {
+                    RFID: rfid,
+                    lng,
+                    lat,
+                    details: det,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                editMsg.textContent = t('editSaving');
+                editMsg.className = "muted";
+
+                await docRef.set(data, {
+                    merge: true
+                });
+                editMsg.textContent = t('editSaveSuccess');
+                editMsg.className = "muted ok";
+                setBinsStatus(`${t('editSaveSuccess')} ${binId}`, "ok");
+                setTimeout(closeEditModal, 600);
+            } catch (e) {
+                editMsg.textContent = `${t('editSaveError')} ${errStr(e)}`;
+                editMsg.className = "muted err";
+            }
+        };
+        // แนบ handler เข้าไป
+        editForm.addEventListener("submit", editFormSubmitHandler);
+
+
+        window.editBin = async function (zone, binId) {
+            try {
+                // ต้องเรียก closeEditModal ก่อนเพื่อคืนโครงสร้างฟอร์มเดิม
+                closeEditModal();
+
+                const docRef = db
+                    .collection("smartbins")
+                    .doc(zone)
+                    .collection("bin_data")
+                    .doc(binId);
+
+                const snap = await docRef.get();
+                if (!snap.exists) {
+                    setBinsStatus(`${t('errorBinNotFound')} ${binId}`, "err");
+                    return;
+                }
+                const d = snap.data() || {};
+
+                if (d.locked === true) {
+                    editRfid.disabled = true;
+                    editMacAddress.disabled = true;
+                } else {
+                    editRfid.disabled = false;
+                }
+
+
+                // กำหนดค่าให้กับฟิลด์ (หลังจากคืนโครงสร้างแล้ว)
+                editDocZone.value = zone;
+                editDocArea.value = d.area || "";
+                editDocBinId.value = binId;
+                editZoneDisplay.value = zone;
+                editAreaDisplay.value = d.area || "—";
+                editBinIdDisplay.value = binId;
+
+                editRfid.value = d.RFID || d.rfid || "";
+                if (editMacAddress) editMacAddress.value = d.macAddress || "—"; // 🚨 NEW
+                editLat.value = d.lat !== undefined && d.lat !== null ? d.lat : "";
+                editLng.value = d.lng !== undefined && d.lng !== null ? d.lng : "";
+                document.getElementById("editDetails").value = d.details || "";
+
+                openEditModal();
+            } catch (e) {
+                setBinsStatus("อ่านข้อมูลไม่สำเร็จ: " + errStr(e), "err");
+            }
+        };
+
+        // ---------- Delete bin (soft delete) ----------
+        window.deleteBin = function (zone, binId) {
+            const binData = bins.find(b => b.zone === zone && b.binId === binId);
+            const area = binData?.data?.area || "—";
+
+            showDeleteConfirmModal(
+                { zone, area, binId },
+                async () => {
+                    try {
+                        const docRef = db
+                            .collection("smartbins")
+                            .doc(zone)
+                            .collection("bin_data")
+                            .doc(binId);
+
+                        await docRef.set({
+                            isHidden: true,
+                            deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+
+                        setBinsStatus(`${t('deleteSuccess')} ${binId}`, "ok");
+                    } catch (e) {
+                        setBinsStatus(`${t('deleteError')} ${errStr(e)}`, "err");
+                    }
+                }
+            );
+        };
+
+
+        // ---------- Add Bin Modal (เพิ่ม listen/unlisten MAC) ----------
+        function openAddModal() {
+            // ปิด Modal อื่นๆ ก่อนเปิด Add Bin Modal
+            closeZoneModal(false);
+            closeAreaModal(false);
+            closeEditModal(); // ปิด Modal แจ้งเตือนซ้ำ (คืนโครงสร้าง Edit Modal)
+
+            // Clear form and reset visibility before showing
+            clearForm();
+
+            // 🚨 NEW: Load MAC Addresses
+            listenForOnlineMacAddresses();
+            // END NEW
+
+            setTimeout(() => {
+                macAddressEl.focus();
+            }, 100);
+
+            addBinBackdrop.classList.add("show");
+            lockBodyScroll(true); // ล็อก scroll หน้าเว็บ
+        }
+
+        function closeAddModal(unlockScroll = true) {
+            addBinBackdrop.classList.remove("show");
+            clearForm();
+
+            detachRfidListener();
+
+            // 🚨 NEW: Stop listening to MAC Addresses
+            if (macAddressListenerUnsub) {
+                macAddressListenerUnsub();
+                macAddressListenerUnsub = null;
+            }
+            // END NEW
+
+            if (unlockScroll) {
+                lockBodyScroll(false); // ปลดล็อก scroll หน้าเว็บ
+            }
+        }
+
+
+        btnToggleForm.addEventListener("click", openAddModal);
+        btnAddClose.addEventListener("click", async () => {
+            await releaseConfirmedMac();
+            closeAddModal(true);
+        });
+
+        // ปิด modal ถ้าคลิกนอกกล่อง
+        addBinBackdrop.addEventListener("click", async (e) => {
+            if (e.target === addBinBackdrop) {
+                await releaseConfirmedMac();
+                closeAddModal(true);
+            }
+        });
+
+
+
+        // ---------- Language (No change needed, but include context for completeness) ----------
+        function updateLangMenuActive() {
+            refreshShellRefs();
+            if (langIconBtn) {
+                langIconBtn.setAttribute("aria-label", t('ariaChangeLanguage'));
+            }
+            if (!langMenu) return;
+            langMenu.querySelectorAll("button[data-lang]").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.lang === currentLang);
+            });
+        }
+        function changeLanguage(lang, isUpdate = false) {
+            if (!window.SW_Translations || !window.SW_Translations[lang]) return;
+            currentLang = lang;
+            refreshShellRefs();
+            if (langSelect) langSelect.value = currentLang;
+
+            document.title = getTranslation('pageTitle_bins');
+            $("pageTitleHeading").textContent = getTranslation('mainTitle_bins');
+            if (binsTableTitle) binsTableTitle.textContent = getTranslation('mainTitle_bins');
+
+            if (window.AdminNav) {
+                window.AdminNav.setLanguage(currentLang);
+            }
+            if (window.AdminUser) {
+                window.AdminUser.setLanguage(currentLang);
+            }
+
+            if ($("labelZone")) $("labelZone").textContent = getTranslation('labelZone');
+            $("labelArea").textContent = getTranslation('labelArea'); // New Area
+            $("labelBinId").textContent = getTranslation('labelBinId');
+            $("labelOwner").textContent = getTranslation('labelOwner');
+            $("labelRfid").textContent = getTranslation('labelRfid');
+            $("labelPosition").textContent = getTranslation('labelPosition');
+            $("labelDetails").textContent = getTranslation('labelDetails');
+
+            // --- Update Placeholders and button text ---
+            rfidEl.placeholder = getTranslation('placeholderRfid');
+            binIdEl.placeholder = getTranslation('placeholderBinId');
+            lngEl.placeholder = getTranslation('placeholderLng');
+            latEl.placeholder = getTranslation('placeholderLat');
+            detailsEl.placeholder = getTranslation('placeholderDetails');
+
+            if (btnPickMap) btnPickMap.textContent = getTranslation('btnPickMap');
+            if (mapModalTitle) mapModalTitle.textContent = getTranslation('mapModalTitle');
+            if (btnMapConfirm) btnMapConfirm.textContent = getTranslation('mapConfirm');
+            const mapExit = getTranslation('mapExit');
+            if (btnMapCancel) btnMapCancel.textContent = (mapExit === 'mapExit') ? getTranslation('btnCancel') : mapExit;
+            if (mapHintEl) mapHintEl.textContent = getTranslation('mapHintClick');
+            setMapStatus("", "");
+            const saveLabel = getTranslation('btnSaveBin');
+            $("btnSave").textContent = (saveLabel === 'btnSaveBin') ? getTranslation('btnSave') : saveLabel;
+            btnReset.textContent = getTranslation('btnReset');
+
+            // หัวข้อ + ปุ่มเพิ่มถัง (แม้หัวข้อจะถูกซ่อนใน CSS แต่ให้ซิงก์ข้อความไว้)
+            if (addBinHeaderTitle) addBinHeaderTitle.textContent = t('addBinHeaderTitle');
+            if (btnToggleFormLabel) {
+                btnToggleFormLabel.textContent = t('btnShowForm');
+            } else if (btnToggleForm) {
+                btnToggleForm.textContent = t('btnShowForm');
+            }
+            const addBinModalTitle = $("addBinModalTitle");
+            if (addBinModalTitle) addBinModalTitle.textContent = t('addBinHeaderTitle');
+
+            renderOwnerSelect();
+
+            $("filterZoneLabel").textContent = t('filterZoneLabel');
+            $("filterAreaLabel").textContent = t('filterAreaLabel'); // New Area
+            $("filterBinLabel").textContent = t('filterBinLabel');
+            filterBinText.placeholder = t('filterBinPlaceholder');
+
+            $("thZone").textContent = t('tableHeaderZone');
+            $("thArea").textContent = t('tableHeaderArea'); // New Area
+            $("thBin").textContent = t('tableHeaderBin');
+            $("thOwner").textContent = t('tableHeaderOwner');
+            $("thRfid").textContent = t('tableHeaderRfid');
+            $("thCoords").textContent = t('tableHeaderCoords');
+            $("thDetails").textContent = t('tableHeaderDetails');
+            $("thUpdated").textContent = t('tableHeaderUpdated');
+            $("thManage").textContent = t('tableHeaderManage');
+
+            // Edit Modal Texts (จะถูกแทนที่ด้วย Card ในกรณี Duplicate)
+            $("editModalTitle").textContent = t('editModalTitle');
+            $("editLabelZone").textContent = t('editLabelZone');
+            $("editLabelArea").textContent = t('editLabelArea'); // New Area
+            $("editLabelBinId").textContent = t('editLabelBinId');
+            $("editLabelRfid").textContent = t('editLabelRfid');
+            $("editLabelPosition").textContent = t('editLabelPosition');
+            $("editLabelDetails").textContent = t('editLabelDetails');
+            $("editCancel").textContent = t('btnCancel');
+            $("btnSaveChanges").textContent = t('btnSaveChanges');
+
+            newZoneNameEl.placeholder = t('zoneModalNewPlaceholder');
+            newAreaNameEl.placeholder = t('areaModalNewPlaceholder');
+            // ---------- MAC Address ----------
+            $("labelMacAddress").textContent = t('labelMacAddress');
+            updateConfirmMacLabel();
+
+            // default option (loading / empty)
+            const macLoadingOpt = $("macLoadingOption");
+            if (macLoadingOpt) {
+                macLoadingOpt.textContent = t('macLoading');
+            }
+
+            renderZoneFilterOptions();
+            renderAreaFilterOptions(); // New Area
+            if (loaderTextEl) loaderTextEl.textContent = t('loading');
+            updateLangMenuActive();
+
+            if (window.AdminProfile) {
+                AdminProfile.setLanguage(currentLang);
+            }
+            renderBinsTable();
+            if (!isUpdate) {
+                renderZoneSelect();
+                renderZoneList();
+            }
+        }
+
+        // -----------------------------------------------------------
+        // 🚨 NEW: ฟังก์ชันสำหรับ MAC Address 
+        // -----------------------------------------------------------
+
+        function renderMacAddressSelect() {
+            if (!macAddressEl) return;
+            const selected = macAddressEl.value;
+
+            macAddressEl.innerHTML = "";
+            const opt0 = document.createElement("option");
+            opt0.value = "";
+
+            if (!macAddresses.length) {
+                opt0.textContent = t('macSelectOffline');
+                macAddressEl.disabled = true;
+                if (btnConfirmMac) btnConfirmMac.disabled = true;
+            } else {
+                opt0.textContent = t('macSelectDefault');
+                macAddressEl.disabled = false;
+                if (btnConfirmMac) btnConfirmMac.disabled = (selected === "");
+            }
+            macAddressEl.appendChild(opt0);
+
+            macAddresses.forEach(mac => {
+                const option = document.createElement("option");
+                option.value = mac.mac;
+                option.textContent = mac.mac;
+                macAddressEl.appendChild(option);
+            });
+
+            // ⭐ ถ้ามี MAC ที่เรายืนยันแล้ว ให้ใช้ค่านี้เสมอ
+            if (confirmedMacTemp) {
+                macAddressEl.value = confirmedMacTemp;
+            } else if (selected && macAddresses.some(m => m.mac === selected)) {
+                macAddressEl.value = selected;
+            } else {
+                macAddressEl.value = "";
+            }
+
+            if (btnConfirmMac) btnConfirmMac.disabled = (macAddressEl.value === "");
+        }
+
+        function updateOnlineMacs() {
+            const now = Date.now();
+            const online = [];
+
+            for (const mac in lastDevicesSnapshot) {
+                const device = lastDevicesSnapshot[mac] || {};
+                const lastUpdate = Number(device.lastUpdate || 0);
+
+                const isBound = device.bound === true;
+                const isInUse = !!device.currentAdmin;
+
+                const isMine = (mac === confirmedMacTemp); // ⭐ สำคัญมาก
+
+                if (
+                    now - lastUpdate <= OFFLINE_TIMEOUT_MS &&
+                    !isBound &&
+                    (!isInUse || isMine)   // 🔥 อนุญาตของตัวเอง
+                ) {
+                    online.push({ mac });
+                }
+            }
+
+            macAddresses = online;
+            renderMacAddressSelect();
+        }
+
+
+        // 🟢🟢🟢 ฟังก์ชันที่แก้ไขแล้ว (ตรวจสอบ status) 🟢🟢🟢
+        function listenForOnlineMacAddresses() {
+            if (macAddressListenerUnsub) {
+                macAddressListenerUnsub();
+                macAddressListenerUnsub = null;
+            }
+
+            const macRef = rtdb.ref(DEVICES_STATUS_BASE_PATH);
+
+            const listener = macRef.on("value", snapshot => {
+                lastDevicesSnapshot = snapshot.val() || {};
+                updateOnlineMacs(); // ← คำนวณทันที 1 รอบ
+            });
+
+            macAddressListenerUnsub = () => macRef.off("value", listener);
+        }
+
+        // ⏱️ เช็ค MAC ที่ออนไลน์ทุก 5 วินาที (สำคัญมาก)
+        setInterval(() => {
+            updateOnlineMacs();
+        }, 5000);
+
+        // -----------------------------------------------------------
+        // 🚨 NEW: ฟัง RFID จาก RTDB (รองรับ child_added + child_changed)
+        // -----------------------------------------------------------
+
+        function attachRfidListener() {
+            const uid = window.ADMIN_AUTH?.uid;
+            if (!uid || rfidListenerRef) return;
+
+            const ref = rtdb.ref(`admin_rfid_input/${uid}`);
+            rfidListenerRef = ref;
+
+            ref.on("value", async snap => {
+                const data = snap.val();
+                if (!data?.tagId) return;
+
+                const rfidValue = data.tagId.toUpperCase();
+                if (rfidCheckTimer) clearTimeout(rfidCheckTimer);
+                lastRfidChecked = rfidValue;
+                rfidEl.value = rfidValue;
+                rfidEl.dispatchEvent(new Event("input"));
+                rfidEl.focus();
+
+                try {
+                    const dup = await checkDuplicateRfidRealtime(rfidValue);
+                    if (dup) {
+                        duplicatedRfidDetected = true;
+                        showDuplicateRfidModal(dup, rfidValue);
+                    }
+                } catch (e) {
+                    console.warn("RFID duplicate check failed", e);
+                }
+
+                // เคลียร์หลังรับ
+                await ref.remove();
+            });
+        }
+
+        function detachRfidListener() {
+            if (rfidListenerRef) {
+                rfidListenerRef.off();
+                rfidListenerRef = null;
+            }
+        }
+
+        // เรียกใช้ตอนโหลดหน้า
+        document.addEventListener("DOMContentLoaded", () => {
+            refreshShellRefs();
+            updateLangMenuActive();
+            if (langSelect) langSelect.value = currentLang;
+        });
+
+        changeLanguage(currentLang);
+        loadOwners();
+
+        // 🚨 เริ่มต้นฟัง RFID จาก RTDB
+        // attachRfidListener();
+
+        // 🧹 ปิด listener เมื่อออกจากหน้า (กัน memory leak)
+        window.addEventListener("beforeunload", () => {
+            if (confirmedMacTemp) {
+                rtdb
+                    .ref(`esp32_devices/${confirmedMacTemp}/currentAdmin`)
+                    .remove();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

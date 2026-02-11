@@ -1,0 +1,1866 @@
+﻿﻿<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Waste - พนักงานขับรถเก็บขยะ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="a_style.css">
+  <link rel="stylesheet" href="admin-shell.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="../Login/auth.js"></script>
+  <script src="admin-lang.js"></script>
+  <script src="admin-shell.js" defer></script>
+  <script src="../i18n/lang.js"></script>
+  <script src="../i18n/th.js"></script>
+  <script src="../i18n/en.js"></script>
+  <script src="../i18n/ms.js"></script>
+  <script src="admin-user.js" defer></script>
+  <script src="admin-nav.js" defer></script>
+  <script src="admin-profile.js" defer></script>
+  <script src="admin-auth-bootstrap.js" defer></script> <!-- ⭐ เพิ่ม -->
+
+  <style>
+    :root {
+      --btn-min-h: 46px;
+      --btn-pad-x: 16px;
+      --btn-pad-y: 10px;
+      --btn-radius: 14px;
+      --btn-font: 15px;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+      height: 100vh;
+      touch-action: none;
+    }
+
+    .driver-page {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 12px 0;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 0 18px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 38px;
+      font-weight: 900;
+      color: #1f2937;
+      letter-spacing: -0.4px;
+    }
+
+    .page-sub {
+      margin: 6px 0 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #6b7280;
+    }
+
+    .page-actions {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .content {
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+
+    .muted {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    button {
+      min-height: var(--btn-min-h);
+      padding: var(--btn-pad-y) var(--btn-pad-x);
+      border-radius: var(--btn-radius);
+      border: none;
+      font-size: var(--btn-font);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, filter .2s;
+    }
+
+    button:hover {
+      filter: brightness(1.03);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    button:focus,
+    input:focus,
+    select:focus {
+      outline: 3px solid rgba(14, 165, 233, .25);
+      outline-offset: 2px;
+    }
+
+    .primary {
+      background: #10b981;
+      color: #fff;
+    }
+
+    .ghost {
+      background: #f4f4f5;
+      color: #111827;
+    }
+
+    .danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #6b7280;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      min-height: 52px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+      background: #fff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 6px 12px rgba(15, 23, 42, .04);
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(14, 165, 233, .55);
+    }
+
+    /* Hide browser-native password reveal icon to avoid duplicate eye button */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .row>div {
+      flex: 1 1 220px;
+      min-width: 220px;
+    }
+
+    .add-driver-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .add-driver-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .add-driver-hint {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    #btnOpenDriverForm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      min-height: 48px;
+      background: #10b981;
+      color: #fff;
+      border: 1px solid rgba(16, 185, 129, .32);
+      border-radius: 12px;
+      font-weight: 900;
+      letter-spacing: -0.1px;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, .2);
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+
+    #btnOpenDriverForm:hover {
+      box-shadow: 0 14px 28px rgba(16, 185, 129, .26);
+      filter: brightness(1.03);
+    }
+
+    #btnOpenDriverForm:active {
+      transform: translateY(1px) scale(.99);
+    }
+
+    #btnOpenDriverForm .btnCreateLabel {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      transform: translateY(-1px);
+    }
+
+    #btnOpenDriverForm .btn-icon {
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #btnSaveDriver {
+      white-space: nowrap;
+    }
+
+    #btnClear {
+      white-space: nowrap;
+    }
+
+    .driver-table-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px;
+      background: #fff;
+      border-bottom: 1px solid #e6ebf3;
+      flex-wrap: wrap;
+    }
+
+    .table-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .table-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+      color: #1f2937;
+    }
+
+    .table-toolbar .count-label {
+      font-weight: 600;
+      color: #16a34a;
+      font-size: 13px;
+    }
+
+    .toolbar-fields {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .toolbar-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 180px;
+    }
+
+    .toolbar-field.search-box {
+      min-width: 240px;
+      width: 280px;
+      max-width: 100%;
+    }
+
+    .toolbar-field select,
+    .toolbar-field input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      box-shadow: 0 10px 18px rgba(17, 24, 39, 0.02);
+    }
+
+    .toolbar-field select:focus,
+    .toolbar-field input:focus {
+      outline: 2px solid rgba(14, 165, 233, .25);
+      border-color: rgba(14, 165, 233, .55);
+      outline-offset: 2px;
+    }
+
+    .toolbar-field.search-box input {
+      height: 44px;
+      min-height: 44px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 12px;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid #e6ebf3;
+      background: #f8fafc;
+    }
+
+    .usage-table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font-size: 14px;
+      margin-top: -1px;
+    }
+
+    .usage-table th,
+    .usage-table td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 12px 12px;
+      border-bottom: 1px solid #e6ebf3;
+      color: #0f172a;
+      background: #fff;
+    }
+
+    .usage-table thead th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.2;
+      padding-top: 14px;
+      padding-bottom: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .usage-table th:last-child,
+    .usage-table td:last-child {
+      text-align: center;
+    }
+
+    .usage-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .usage-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .input-with-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-with-icon input {
+      padding-right: 52px;
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+      z-index: 2;
+    }
+
+    .toggle-pass:hover {
+      background: #f1f5f9;
+    }
+
+    .toggle-pass:active {
+      transform: translateY(-50%);
+    }
+
+    .toggle-pass i {
+      font-size: 18px;
+      color: #64748b;
+    }
+
+    .toggle-pass .icon-eye-off {
+      display: none;
+    }
+
+    .toggle-pass.is-visible .icon-eye {
+      display: none;
+    }
+
+    .toggle-pass.is-visible .icon-eye-off {
+      display: block;
+    }
+
+    .badge-zone {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+    }
+
+    .bin-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bin-actions .icon-btn {
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+      min-height: 0;
+      border-radius: 999px;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .bin-actions .icon-btn:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .bin-actions .icon-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .icon-edit-btn svg {
+      fill: #2563eb;
+    }
+
+    .icon-delete-btn svg {
+      fill: #dc2626;
+    }
+
+    .bin-actions .icon-btn:focus {
+      outline: 3px solid #93c5fd;
+      outline-offset: 2px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1500;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px 18px 12px;
+      max-width: 620px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, .35);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .modal-close {
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    .modal-footer-row {
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .page-actions {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 4px;
+      }
+
+      #btnOpenDriverForm {
+        width: 100%;
+      }
+
+      #driverForm .row:not(.modal-footer-row) {
+        margin-top: 0 !important;
+      }
+
+      #driverForm .row:not(.modal-footer-row) + .row:not(.modal-footer-row) {
+        margin-top: 0 !important;
+      }
+
+      #driverForm .row {
+        display: block;
+        gap: 0;
+      }
+
+      #driverForm .row > div {
+        width: 100%;
+        min-width: 0;
+      }
+
+      #driverForm .row > div + div {
+        margin-top: 0;
+      }
+
+      #driverForm label {
+        margin-bottom: 0;
+      }
+
+      .table-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 14px;
+      }
+
+      .toolbar-fields {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .toolbar-field {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .toolbar-field.search-box {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .row {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .row>div {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .add-driver-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .add-driver-header button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .modal-backdrop {
+        align-items: flex-start;
+        padding: 32px 0;
+      }
+
+      .modal {
+        max-width: 100%;
+        margin: 0 16px 24px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .bin-actions .icon-btn {
+        width: 28px;
+        height: 28px;
+        padding: 3px;
+      }
+
+      .bin-actions .icon-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page-head {
+        max-width: 640px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .driver-table-card {
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+        border-radius: 16px;
+      }
+
+      .driver-table-card .table-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 6;
+        background: #fff;
+        overflow-x: auto;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        border-top: 0;
+      }
+
+      .usage-table {
+        min-width: 760px;
+      }
+
+      .usage-table thead th {
+        white-space: nowrap;
+      }
+    }
+  </style>
+
+  <style>
+    /* Language Dropdown (match login style) */
+    .lang-switcher {
+      position: relative;
+    }
+
+    .lang-switcher .icon-btn {
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .lang-switcher .icon-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+    }
+    .lang-switcher .icon-btn:active { transform: scale(0.96); }
+
+    .lang-menu {
+      position: absolute;
+      top: 54px;
+      right: 0;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 8px;
+      min-width: 190px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 1200;
+    }
+
+    .lang-menu.show {
+      display: flex;
+    }
+
+    .lang-menu button {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      color: #0f172a;
+    }
+
+    .lang-menu button:hover {
+      background: #f1f5f9;
+    }
+
+    .lang-menu button:active {
+      background: #e2e8f0;
+    }
+
+    .lang-menu button.active {
+      background: #e0f2fe;
+      color: var(--accent, #0ea5e9);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body data-active-nav="addDriver">
+  <main>
+    <div id="pageLoader" class="shell-loader">
+      <div class="loader-box">
+        <div class="loader-spinner"></div>
+        <div class="loader-text" id="loaderText">กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <div class="driver-page">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title" id="mainTitle">จัดการพนักงานขับรถเก็บขยะ</h1>
+          <p class="page-sub" id="pageHint">
+            เพิ่ม / จัดการบัญชีผู้ใช้ของพนักงานขับรถเก็บขยะในแต่ละเขตพื้นที่
+          </p>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="primary" id="btnOpenDriverForm">
+            <i class="ri-user-add-line btn-icon"></i>
+            <span class="btnCreateLabel" id="btnOpenDriverFormLabel">เพิ่มพนักงานขับรถ</span>
+          </button>
+        </div>
+        <select id="langSelect" style="display:none;">
+          <option value="th">ไทย</option>
+          <option value="en">English</option>
+          <option value="ms">Bahasa Melayu</option>
+        </select>
+      </div>
+
+      <div class="content">
+
+        <div class="card driver-table-card">
+          <div class="table-toolbar">
+            <div class="table-title-wrap">
+              <h4 class="table-title" id="driverTableTitle">ตารางข้อมูลพนักงานขับรถ</h4>
+              <span class="count-label" id="countLabel">แสดง 0 รายการ</span>
+            </div>
+            <div class="toolbar-fields">
+              <div class="toolbar-field">
+                <select id="filterZoneSelect">
+                  <option value="__all" id="optZoneAll"></option>
+                </select>
+              </div>
+
+              <div class="toolbar-field search-box">
+                <input id="searchInput" type="text" />
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="usage-table">
+              <thead>
+                <tr>
+                  <th id="thZone">เขต</th>
+                  <th id="thDriverId">Driver ID</th>
+                  <th id="thUsername">ชื่อผู้ใช้</th>
+                  <th id="thFullName">ชื่อ - สกุล</th>
+                  <th id="thPhone">เบอร์โทรศัพท์</th>
+                  <th id="thUpdated">อัปเดตเมื่อ</th>
+                  <th id="thActions">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="driversTbody">
+                <!-- Data will be rendered here by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <!-- ================= Driver Modal ================= -->
+  <div class="modal-backdrop" id="driverModalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="driverModalTitle">เพิ่มพนักงานขับรถใหม่</div>
+        <button type="button" class="modal-close" id="btnCloseDriverModal">✕</button>
+      </div>
+
+      <!-- ✅ FORM ต้องอยู่ใน modal นี้ -->
+      <form id="driverForm">
+
+        <div class="row">
+          <div>
+            <label for="zoneSelect" id="labelZone">เขตพื้นที่ (โซนการทำงาน)</label>
+            <select id="zoneSelect" required>
+              <option value="">เลือกเขต...</option>
+            </select>
+          </div>
+          <div>
+            <label for="driverId" id="labelDriverId">Driver ID</label>
+            <input id="driverId" type="text" readonly placeholder="เลือกเขตก่อน" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label for="fullName" id="labelFullName">ชื่อ - นามสกุล</label>
+            <input id="fullName" type="text" required />
+          </div>
+          <div>
+            <label for="phone" id="labelPhone">เบอร์โทรศัพท์</label>
+            <input id="phone" type="text" required />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="username" id="labelUsername">ชื่อผู้ใช้</label>
+            <input id="username" type="text" />
+          </div>
+        </div>
+
+        <div class="row" id="passwordRow">
+          <div>
+            <label for="password" id="labelPassword">รหัสผ่าน</label>
+            <div class="input-with-icon">
+              <input id="password" type="password" />
+              <button type="button" class="toggle-pass" id="togglePassword" aria-label="แสดงรหัสผ่าน">
+                <i class="ri-eye-line icon-eye" aria-hidden="true"></i>
+                <i class="ri-eye-off-line icon-eye-off" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row modal-footer-row">
+          <div class="muted" id="formStatus"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;flex:1;">
+            <button type="button" class="ghost" id="btnClear">ล้างฟอร์ม</button>
+            <button type="submit" class="primary" id="btnSaveDriver">
+              บันทึกพนักงานขับรถ
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Confirm Modal (แยกออกมา) ================= -->
+  <div class="modal-backdrop" id="confirmBackdrop" style="display:none;">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <div class="modal-title" id="confirmTitle"></div>
+        <button type="button" class="modal-close" id="btnConfirmClose">✕</button>
+      </div>
+
+      <p class="muted" id="confirmMessage" style="margin:12px 0;"></p>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="ghost" id="btnConfirmCancel"></button>
+        <button class="primary" id="btnConfirmOk"></button>
+      </div>
+    </div>
+  </div>
+  <script>
+    /* ---------- Firebase ---------- */
+    var firebaseConfig = {
+      apiKey: "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw",
+      authDomain: "smartwaste2568-1d792.firebaseapp.com",
+      databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "smartwaste2568-1d792",
+      storageBucket: "smartwaste2568-1d792.firebasestorage.app",
+      messagingSenderId: "1041339993312",
+      appId: "1:1041339993312:web:65b26ea83dcbf4f8b29485",
+      measurementId: "G-FV5TEPVZWN",
+      databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const fs = firebase.firestore();
+    const FieldValue = firebase.firestore.FieldValue;
+    const usersCol = fs.collection("users");
+    const ACTIVE_DRIVER_STATUS = new Set([1, "1"]);
+    const zonesCol = fs.collection("zones");
+
+    function isActiveDriver(data) {
+      if (!data) return false;
+      if (data.isDeleted === true) return false;
+      const status = typeof data.status === "string" ? data.status.trim() : data.status;
+      return ACTIVE_DRIVER_STATUS.has(status);
+    }
+
+    async function hasPhoneConflict(phoneDigits, rawPhone, editingDocId = null) {
+      const jobs = [];
+      jobs.push(
+        usersCol.where("phoneNormalized", "==", phoneDigits).limit(5).get()
+      );
+
+      const variants = Array.from(
+        new Set(
+          [rawPhone ? rawPhone.trim() : "", phoneDigits].filter(Boolean)
+        )
+      );
+      if (variants.length) {
+        jobs.push(
+          usersCol.where("phone", "in", variants).limit(5).get()
+        );
+      }
+
+      const snaps = await Promise.all(jobs);
+      for (const snap of snaps) {
+        for (const doc of snap.docs) {
+          const data = doc.data() || {};
+          if (isActiveDriver(data)) {
+            // 🔑 ถ้าเป็น doc ตัวเอง (edit mode) → ข้าม
+            if (editingDocId && doc.id === editingDocId) {
+              continue;
+            }
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    async function validateBeforeSaveDriver({
+      driverId,
+      fullName,
+      phoneDigits,
+      zoneId,
+      editingDriverDocId
+    }) {
+      // 1️⃣ driverId ซ้ำ
+      if (!editingDriverDocId) {
+        const dupSnap = await usersCol
+          .where("driverId", "==", driverId)
+          .where("isDeleted", "==", false)
+          .limit(1)
+          .get();
+
+        if (!dupSnap.empty) {
+          return { ok: false, message: tr("statusDriverIdExists") };
+        }
+      }
+
+      // 2️⃣ เบอร์โทร
+      if (phoneDigits.length < 9) {
+        return { ok: false, message: tr("errorInvalidPhone") };
+      }
+      if (/^(\d)\1+$/.test(phoneDigits)) {
+        return { ok: false, message: tr("errorInvalidPhone") };
+      }
+      if ("0123456789".includes(phoneDigits)) {
+        return { ok: false, message: tr("errorInvalidPhone") };
+      }
+
+      // 3️⃣ ชื่อซ้ำในโซน (เตือน)
+      const nameDupSnap = await usersCol
+        .where("zoneId", "==", zoneId)
+        .where("fullName", "==", fullName)
+        .where("isDeleted", "==", false)
+        .limit(1)
+        .get();
+
+      if (!nameDupSnap.empty) {
+        const dupDoc = nameDupSnap.docs[0];
+
+        // 🔑 ถ้าเป็น edit และเจอ doc ตัวเอง → ข้าม
+        if (editingDriverDocId && dupDoc.id === editingDriverDocId) {
+          // ไม่ต้องเตือน
+        } else {
+          const ok = await showConfirm(
+            tr("confirmDuplicateName").replace("{name}", fullName)
+          );
+
+          if (!ok) {
+            return { ok: false, message: tr("statusCancelled") };
+          }
+        }
+      }
+      return { ok: true };
+    }
+
+    /* ---------- DOM refs ---------- */
+    const filterZoneSelect = document.getElementById("filterZoneSelect");
+    const zoneSelect = document.getElementById('zoneSelect');
+    const driverIdInput = document.getElementById('driverId');
+    const fullNameInput = document.getElementById('fullName');
+    const phoneInput = document.getElementById('phone');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById("togglePassword");
+    const formStatus = document.getElementById('formStatus');
+    const driverForm = document.getElementById('driverForm');
+    const btnClear = document.getElementById('btnClear');
+
+    const addDriverHeaderTitle = document.getElementById('addDriverHeaderTitle');
+    const addDriverHeaderHint = document.getElementById('addDriverHeaderHint');
+    const btnOpenDriverForm = document.getElementById('btnOpenDriverForm');
+    const btnOpenDriverFormLabel = document.getElementById('btnOpenDriverFormLabel');
+    const driverModalBackdrop = document.getElementById('driverModalBackdrop');
+    const btnCloseDriverModal = document.getElementById('btnCloseDriverModal');
+    const driverModalTitle = document.getElementById('driverModalTitle');
+
+    const searchInput = document.getElementById('searchInput');
+    const driversTbody = document.getElementById('driversTbody');
+    const countLabel = document.getElementById('countLabel');
+    const pageLoader = document.getElementById("pageLoader");
+    const loaderTextEl = document.getElementById("loaderText");
+
+    /* ---------- State ---------- */
+    let zones = [];
+    function getZoneName(zoneId) {
+      return zones.find(z => z.id === zoneId)?.name || zoneId || "";
+    }
+
+    const driverIdCache = {};
+
+    async function generateDriverId({ zoneId }) {
+      const zoneName = getZoneName(zoneId);
+      const zoneLetter = zoneId.substring(0, 2).toUpperCase();
+      const prefix = `DRIVER_${zoneLetter}`;
+
+      if (driverIdCache[zoneId]) return driverIdCache[zoneId];
+
+      const snap = await usersCol
+        .where("driverId", ">=", prefix)
+        .where("driverId", "<", prefix + "\uf8ff")
+        .get();
+
+      let max = 0;
+      snap.forEach(doc => {
+        const m = (doc.data().driverId || "").match(/(\d{3})$/);
+        if (m) max = Math.max(max, parseInt(m[1], 10));
+      });
+
+      const finalId = `${prefix}${String(max + 1).padStart(3, "0")}`;
+      driverIdCache[zoneId] = finalId;
+      return finalId;
+    }
+
+    // {id, name}
+    let drivers = [];      // {docId, driverId, username, fullName, phone, zoneId, zoneName, updatedAt}
+    let activeZoneFilter = "__all";
+    let searchText = "";
+    let editingDriverDocId = null; // State for editing
+    let originalDriverData = null; // ⭐ เก็บข้อมูลเดิมก่อนแก้
+
+    const LangState = window.AdminLang;
+    let currentLang = (LangState && typeof LangState.getLang === "function")
+      ? LangState.getLang()
+      : (localStorage.getItem("sw_lang") || "th");
+    const langSelect = document.getElementById("langSelect");
+
+    function tr(key) {
+      const dict =
+        (window.SW_Translations && window.SW_Translations[currentLang]) ||
+        (window.SW_Translations && window.SW_Translations.th) ||
+        {};
+      return dict[key] !== undefined ? dict[key] : key;
+    }
+
+    function setFormStatus(text, type) {
+      formStatus.textContent = text || "";
+      formStatus.style.color = type === "err" ? "#dc2626" :
+        type === "ok" ? "#16a34a" : "#6b7280";
+    }
+
+    function normalizePhone(value) {
+      return (value || "").replace(/[^0-9]/g, "");
+    }
+
+    /* hash password เหมือนหน้า login */
+    async function hashPassword(pw) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(pw);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    /* ---------- lock scroll ตอนเปิด modal ---------- */
+    function lockBodyScroll(lock) {
+      document.body.classList.toggle("modal-open", !!lock);
+    }
+
+    function showConfirm(message) {
+      return new Promise(resolve => {
+        const backdrop = document.getElementById("confirmBackdrop");
+        const msg = document.getElementById("confirmMessage");
+        const btnOk = document.getElementById("btnConfirmOk");
+        const btnCancel = document.getElementById("btnConfirmCancel");
+        const btnClose = document.getElementById("btnConfirmClose");
+
+        msg.textContent = message;
+        backdrop.style.display = "flex";
+        lockBodyScroll(true);
+
+        const cleanup = (result) => {
+          backdrop.style.display = "none";
+          lockBodyScroll(false);
+          btnOk.onclick = btnCancel.onclick = btnClose.onclick = null;
+          resolve(result);
+        };
+
+        btnOk.onclick = () => cleanup(true);
+        btnCancel.onclick = () => cleanup(false);
+        btnClose.onclick = () => cleanup(false);
+      });
+    }
+
+
+    /* ---------- Loader ---------- */
+    function showLoader(text) {
+      if (text && loaderTextEl) loaderTextEl.textContent = text;
+      if (pageLoader) pageLoader.classList.add("show");
+    }
+
+    function hideLoader() {
+      if (pageLoader) pageLoader.classList.remove("show");
+    }
+
+    /* ---------- Load zones ---------- */
+    async function loadZones() {
+      const snap = await zonesCol.get();
+      zones = [];
+      zoneSelect.innerHTML = '<option value="">' + tr("zonePlaceholder") + '</option>';
+
+      snap.forEach(doc => {
+        const d = doc.data() || {};
+        const id = doc.id;
+        const name = d.name || id;
+        zones.push({ id, name });
+
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = name;
+        zoneSelect.appendChild(opt);
+      });
+
+      // ---------- filter zone dropdown ----------
+      filterZoneSelect.innerHTML =
+        `<option value="__all" id="optZoneAll">
+     ${tr("filterZoneAll")}
+   </option>`;
+      zones.forEach(z => {
+        const opt = document.createElement("option");
+        opt.value = z.id;
+        opt.textContent = z.name;
+        filterZoneSelect.appendChild(opt);
+      });
+
+    }
+
+    zoneSelect.addEventListener("change", async () => {
+      const zoneId = zoneSelect.value;
+      driverIdInput.value = "";
+
+      if (!zoneId) return;
+
+      const driverId = await generateDriverId({ zoneId });
+
+
+      driverIdInput.value = driverId;
+    });
+
+
+
+    /* ---------- Load drivers ---------- */
+    async function loadDrivers() {
+      driversTbody.innerHTML =
+        `<tr><td colspan="7" class="muted">${tr("loadingText")}</td></tr>`;
+      const snap = await usersCol
+        .where("isDeleted", "==", false)
+        .get();
+      drivers = [];
+      snap.forEach(doc => {
+        const d = doc.data() || {};
+        if (!isActiveDriver(d)) return;
+        const updatedAt = d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate() : null;
+        const phoneValue = d.phone || d.phoneNormalized || "";
+        drivers.push({
+          docId: doc.id,
+          driverId: d.driverId || "",
+          // driverKey: d.driverKey || null,
+          username: d.username || doc.id || "",
+          fullName: d.fullName || "",
+          phone: phoneValue,
+          zoneId: d.zoneId || "",
+          zoneName: d.zoneName || d.zoneId || "",
+          updatedAt
+        });
+      });
+      drivers.sort((a, b) => {
+        const ta = a.updatedAt ? a.updatedAt.getTime() : 0;
+        const tb = b.updatedAt ? b.updatedAt.getTime() : 0;
+        return tb - ta;
+      });
+      renderDrivers();
+    }
+
+    /* ---------- Render table ---------- */
+    function renderDrivers() {
+      const zoneFilter = activeZoneFilter;
+      const keyword = (searchText || "").trim().toLowerCase();
+
+      let filtered = drivers.slice();
+      if (activeZoneFilter !== "__all") {
+        filtered = filtered.filter(d => d.zoneId === activeZoneFilter);
+      }
+
+      if (keyword) {
+        filtered = filtered.filter(d =>
+          (d.driverId || "").toLowerCase().includes(keyword) ||
+          (d.username || "").toLowerCase().includes(keyword)
+        );
+      }
+
+      countLabel.textContent = tr("countPrefix") + " " + filtered.length + " " + tr("countSuffix");
+
+      if (filtered.length === 0) {
+        const msg = tr("noDrivers");
+        driversTbody.innerHTML =
+          `<tr><td colspan="7" class="muted">${tr("noDrivers")}</td></tr>`;
+        return;
+      }
+
+      const rows = filtered.map(d => {
+        const zoneName =
+          d.zoneName && d.zoneName !== "undefined"
+            ? d.zoneName
+            : d.zoneId || "-";
+        const t = d.updatedAt ? d.updatedAt.toLocaleString() : "-";
+        const editLabel = tr("btnEdit");
+        const delLabel = tr("btnDelete");
+        return `
+          <tr>
+            <td><span class="badge-zone">${zoneName}</span></td>
+            <td>${d.driverId || "—"}</td>
+            <td>${d.username ? d.username : "—"}</td>
+            <td>${d.fullName || "—"}</td>
+            <td>${d.phone || "—"}</td>
+            <td>${t}</td>
+            <td>
+              <div class="bin-actions">
+                <button class="icon-btn icon-edit-btn" 
+                        type="button" 
+                        data-action="edit" 
+                        data-id="${d.docId}" 
+                        aria-label="${editLabel}"
+                        title="${editLabel}">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
+                  </svg>
+                </button>
+
+                <button class="icon-btn icon-delete-btn" 
+                        type="button" 
+                        data-action="delete" 
+                        data-id="${d.docId}" 
+                        aria-label="${delLabel}"
+                        title="${delLabel}">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7H3V5h4V4a1 1 0 0 1 1-1zm1 2v1h4V5h-4zm-2 4h2v9H8V9zm4 0h2v9h-2V9z"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+      driversTbody.innerHTML = rows;
+    }
+
+    filterZoneSelect.addEventListener("change", () => {
+      activeZoneFilter = filterZoneSelect.value;
+      renderDrivers();
+    });
+
+    searchInput.addEventListener("input", () => {
+      searchText = searchInput.value;
+      renderDrivers();
+    });
+
+    /* ---------- Add driver (submit form) ---------- */
+    driverForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const zoneId = zoneSelect.value;
+      const driverId = driverIdInput.value.trim();
+      const zoneName = getZoneName(zoneId);
+      const fullName = fullNameInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const phoneDigits = normalizePhone(phone);
+      const username = usernameInput.value.trim();
+      // 🔁 EDIT MODE: เช็คว่ามีการเปลี่ยนข้อมูลจริงหรือไม่
+      if (editingDriverDocId && originalDriverData) {
+        const isSameData =
+          originalDriverData.fullName === fullName &&
+          originalDriverData.phone === phoneDigits &&
+          originalDriverData.username === username &&
+          originalDriverData.zoneId === zoneId;
+
+        if (isSameData) {
+          setFormStatus(tr("statusNoChange"), "err");
+          btnSaveDriver.disabled = false;
+          return;
+        }
+      }
+
+      const password = passwordInput.value.trim();
+      const driverType = "public"; // ตอนนี้รองรับแค่ public
+      const areaId = null;
+
+
+      const btnSaveDriver = document.getElementById("btnSaveDriver");
+      btnSaveDriver.disabled = true;
+
+      /* ---------- VALIDATION ---------- */
+
+      if (!zoneId) {
+        setFormStatus(tr("errorSelectZone"), "err");
+        btnSaveDriver.disabled = false;
+        return;
+      }
+
+      if (!driverId) {
+        setFormStatus(tr("errorNoDriverId"), "err");
+        btnSaveDriver.disabled = false;
+        return;
+      }
+
+      if (!fullName || !phoneDigits) {
+        setFormStatus(tr("statusMissingNamePhone"), "err");
+        btnSaveDriver.disabled = false;
+        return;
+      }
+
+      setFormStatus(tr("statusSaving"), "");
+
+      try {
+        // CREATE MODE เท่านั้น
+
+        if (!editingDriverDocId) {
+          if (!username || !password) {
+            setFormStatus(tr("statusMissingUserPass"), "err");
+            btnSaveDriver.disabled = false;
+            return;
+          }
+
+          const existed = await usersCol
+            .where("username", "==", username)
+            .where("isDeleted", "==", false)
+            .limit(1)
+            .get();
+
+          if (!existed.empty) {
+            setFormStatus(tr("statusUsernameExists"), "err");
+            btnSaveDriver.disabled = false;
+            return;
+          }
+
+        }
+
+        /* ---------- ตรวจเบอร์โทรซ้ำ ---------- */
+        const phoneConflict = await hasPhoneConflict(
+          phoneDigits,
+          phone,
+          editingDriverDocId
+        );
+
+        if (phoneConflict) {
+          const ok = await showConfirm(tr("confirmPhoneDuplicate"));
+          if (!ok) {
+            btnSaveDriver.disabled = false;
+            return;
+          }
+        }
+
+
+        /* ---------- VALIDATE เพิ่มเติม ---------- */
+        const validateResult = await validateBeforeSaveDriver({
+          driverId,
+          fullName,
+          phoneDigits,
+          zoneId,
+          editingDriverDocId
+        });
+
+        if (!validateResult.ok) {
+          setFormStatus(validateResult.message, "err");
+          btnSaveDriver.disabled = false;
+          return;
+        }
+
+        /* ---------- SAVE TO /users/{driverId} ---------- */
+        const docRef = editingDriverDocId
+          ? usersCol.doc(editingDriverDocId)
+          : usersCol.doc(driverId);
+
+
+        const payload = {
+          // driverKey: driverKeyFinal,
+          fullName,
+          phone: phoneDigits,
+          phoneNormalized: phoneDigits,
+          zoneId,
+          zoneName,
+          driverType,
+          updatedAt: FieldValue.serverTimestamp()
+        };
+
+        // CREATE MODE
+        if (!editingDriverDocId) {
+          payload.username = username;
+          payload.driverId = driverId;
+          payload.status = 1;
+          payload.isDeleted = false;
+          payload.createdAt = FieldValue.serverTimestamp();
+          payload.passwordHash = await hashPassword(password);
+
+        }
+
+        // 🔥 เขียน Firestore
+        await docRef.set(payload, { merge: true });
+
+        // 🔥 เคลียร์ cache ของโซนนี้
+        delete driverIdCache[zoneId];
+
+
+        setFormStatus(
+          editingDriverDocId ? tr("statusUpdateOk") : tr("statusSaveOk"),
+          "ok"
+        );
+
+
+        await loadDrivers();
+        setTimeout(closeDriverModal, 800);
+
+      } catch (err) {
+        console.error(err);
+        setFormStatus(tr("statusSaveErrorPrefix") + (err.message || err), "err");
+      } finally {
+        btnSaveDriver.disabled = false;
+      }
+    });
+
+
+    btnClear.addEventListener("click", () => {
+      driverForm.reset();
+      driverIdInput.value = "";
+      setFormStatus("", "");
+    });
+
+    /* ---------- Soft delete (ซ่อน ไม่ลบจริง) ---------- */
+    driversTbody.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const docId = btn.dataset.id;
+      if (!docId) return;
+
+      if (action === "delete") {
+        const ok = await showConfirm(tr("confirmDelete"));
+        if (!ok) return;
+
+        try {
+          await usersCol.doc(docId).update({
+            isDeleted: true,
+            updatedAt: FieldValue.serverTimestamp()
+          });
+          drivers = drivers.filter(d => d.docId !== docId);
+          renderDrivers();
+        } catch (err) {
+          setFormStatus(tr("deleteFailPrefix") + err.message, "err");
+        }
+      } else if (action === "edit") {
+        const driverToEdit = drivers.find(d => d.docId === docId);
+        if (driverToEdit) {
+          openDriverModal(driverToEdit);
+        } else {
+          console.error("Driver not found for editing:", docId);
+        }
+      }
+    });
+
+    /* ---------- เปิด/ปิด Modal เพิ่มพนักงานขับรถ ---------- */
+    async function openDriverModal(driver = null) {
+      driverForm.reset();
+      setFormStatus("", "");
+
+      editingDriverDocId = driver ? driver.docId : null;
+
+      if (driver) {
+        // ===== EDIT MODE =====
+        // ⭐ เก็บข้อมูลเดิมไว้เปรียบเทียบตอน submit
+        originalDriverData = {
+          fullName: driver.fullName || "",
+          phone: normalizePhone(driver.phone || ""),
+          username: driver.username || "",
+          zoneId: driver.zoneId || ""
+        };
+
+        driverModalTitle.textContent = tr("editDriverTitle");
+
+        zoneSelect.value = driver.zoneId || "";
+        driverIdInput.value = driver.driverId || "";
+        fullNameInput.value = driver.fullName || "";
+        phoneInput.value = driver.phone || "";
+        usernameInput.value = driver.username || "";
+
+
+        // 🔒 ล็อกค่าที่ห้ามแก้
+        driverIdInput.disabled = true;
+        usernameInput.disabled = true;
+
+        const passwordRow = document.getElementById("passwordRow");
+        if (passwordRow) {
+          passwordRow.style.display = "none";
+        }
+
+        document.getElementById("btnSaveDriver").textContent = tr("btnUpdateDriver");
+
+      } else {
+        // ===== CREATE MODE =====
+        editingDriverDocId = null; // ⭐ รีเซ็ต state ให้ชัดเจน
+
+        driverModalTitle.textContent = tr("addDriverTitle");
+        driverIdInput.disabled = false;
+        usernameInput.disabled = false;
+        const passwordRow = document.getElementById("passwordRow");
+        if (passwordRow) {
+          passwordRow.style.display = "";
+        }
+        passwordInput.required = true;
+        passwordInput.value = "";
+        document.getElementById("btnSaveDriver").textContent = tr("btnSaveDriver");
+      }
+
+      driverModalBackdrop.classList.add("show");
+      lockBodyScroll(true);
+      applyLanguage(true);
+    }
+
+    function closeDriverModal() {
+      driverModalBackdrop.classList.remove('show');
+      lockBodyScroll(false);
+    }
+
+    btnOpenDriverForm.addEventListener("click", openDriverModal);
+    btnCloseDriverModal.addEventListener("click", closeDriverModal);
+
+    driverModalBackdrop.addEventListener("click", (e) => {
+      if (e.target === driverModalBackdrop) {
+        closeDriverModal();
+      }
+    });
+
+    /* ---------- apply language ---------- */
+    function applyLanguage(skipRender = false) {
+      const tMap =
+        (window.SW_Translations && window.SW_Translations[currentLang]) ||
+        (window.SW_Translations && window.SW_Translations.th) ||
+        {};
+
+      const optZoneAll = document.getElementById("optZoneAll");
+      if (optZoneAll) {
+        optZoneAll.textContent = tMap.filterZoneAll || "เขตทั้งหมด";
+      }
+
+      document.documentElement.lang = currentLang;
+      document.title = tMap.pageTitle_driver || tMap.pageTitle || "Smart Waste";
+      document.getElementById("mainTitle").textContent = tMap.mainTitle;
+      document.getElementById("pageHint").textContent = tMap.pageHint;
+      const driverTableTitle = document.getElementById("driverTableTitle");
+      if (driverTableTitle) {
+        driverTableTitle.textContent =
+          tMap.driverTableTitle || "ตารางข้อมูลพนักงานขับรถ";
+      }
+
+      // หัวข้อ + hint + ปุ่มของหัวการ์ด
+      if (addDriverHeaderTitle) addDriverHeaderTitle.textContent = tMap.addDriverTitle;
+      if (addDriverHeaderHint) addDriverHeaderHint.textContent = tMap.addDriverHint;
+      if (btnOpenDriverFormLabel) {
+        btnOpenDriverFormLabel.textContent = tMap.btnOpenDriverForm;
+      } else if (btnOpenDriverForm) {
+        btnOpenDriverForm.textContent = tMap.btnOpenDriverForm;
+      }
+      if (driverModalTitle) {
+        driverModalTitle.textContent = editingDriverDocId
+          ? tMap.editDriverTitle
+          : tMap.addDriverTitle;
+      }
+
+      document.getElementById("labelZone").textContent = tMap.labelZone;
+      const zoneHelpEl = document.getElementById("zoneHelp");
+      if (zoneHelpEl) zoneHelpEl.textContent = tMap.zoneHelp;
+      document.getElementById("labelDriverId").textContent = tMap.labelDriverId;
+      document.getElementById("labelFullName").textContent = tMap.labelFullName;
+      document.getElementById("labelPhone").textContent = tMap.labelPhone;
+      document.getElementById("labelUsername").textContent = tMap.labelUsername;
+      document.getElementById("labelPassword").textContent = tMap.labelPassword;
+      document.getElementById("btnClear").textContent = tMap.btnClear;
+
+      // Set button text based on mode (add/edit)
+      const btnSave = document.getElementById("btnSaveDriver");
+      if (editingDriverDocId) {
+        btnSave.textContent = tMap.btnUpdateDriver;
+      } else { btnSave.textContent = tMap.btnSaveDriver; }
+
+      const labelZoneFilterEl = document.getElementById("labelZoneFilter");
+      if (labelZoneFilterEl) {
+        labelZoneFilterEl.textContent = tMap.labelZoneFilter;
+      } else if (filterZoneSelect) {
+        filterZoneSelect.setAttribute(
+          "aria-label",
+          tMap.labelZoneFilter || "Zone"
+        );
+      }
+      const labelSearchEl = document.getElementById("labelSearch");
+      if (labelSearchEl) {
+        labelSearchEl.textContent = tMap.labelSearch;
+      } else if (searchInput) {
+        searchInput.setAttribute(
+          "aria-label",
+          tMap.labelSearch || "Search"
+        );
+      }
+
+      document.getElementById("thZone").textContent = tMap.thZone;
+      document.getElementById("thDriverId").textContent = tMap.thDriverId;
+      document.getElementById("thUsername").textContent = tMap.thUsername;
+      document.getElementById("thFullName").textContent = tMap.thFullName;
+      document.getElementById("thPhone").textContent = tMap.thPhone;
+      document.getElementById("thUpdated").textContent = tMap.thUpdated;
+      document.getElementById("thActions").textContent = tMap.thActions;
+      document.getElementById("loaderText").textContent = tMap.loaderText;
+      document.getElementById("confirmTitle").textContent =
+        tMap.confirmTitle || tMap.confirm || "Confirm";
+      document.getElementById("btnConfirmCancel").textContent = tMap.btnCancel;
+      document.getElementById("btnConfirmOk").textContent = tMap.btnConfirm;
+      if (togglePasswordBtn) {
+        togglePasswordBtn.setAttribute(
+          "aria-label",
+          togglePasswordBtn.classList.contains("is-visible")
+            ? (tMap.hidePassword || "ซ่อนรหัสผ่าน")
+            : (tMap.showPassword || "แสดงรหัสผ่าน")
+        );
+        togglePasswordBtn.setAttribute(
+          "title",
+          togglePasswordBtn.getAttribute("aria-label") || ""
+        );
+      }
+      const menuToggleBtn = document.getElementById("menuToggleBtn");
+      if (menuToggleBtn) {
+        menuToggleBtn.setAttribute("aria-label", tMap.menuBtn);
+        menuToggleBtn.setAttribute("title", tMap.menuBtn);
+      }
+
+      // placeholders
+      if (zoneSelect.options.length > 0) {
+        zoneSelect.options[0].textContent = tMap.zonePlaceholder;
+      }
+      const passwordRow = document.getElementById("passwordRow");
+      if (passwordRow) {
+        passwordRow.style.display = editingDriverDocId ? "none" : "";
+      }
+      // 🔑 sync disabled state ของ input ตามโหมด
+      if (editingDriverDocId) {
+        usernameInput.disabled = true;
+        driverIdInput.disabled = true;
+      } else {
+        usernameInput.disabled = false;
+        driverIdInput.disabled = false;
+      }
+
+
+      driverIdInput.placeholder = tMap.driverIdPlaceholder || "";
+      fullNameInput.placeholder = tMap.fullNamePh || "";
+      phoneInput.placeholder = tMap.phonePh || "";
+      usernameInput.placeholder = tMap.usernamePh || "";
+      if (editingDriverDocId) {
+        passwordInput.placeholder = tMap.passwordEditHint;
+      } else {
+        passwordInput.placeholder = tMap.passwordPh;
+      }
+      searchInput.placeholder = tMap.searchPh;
+
+      // ปุ่มเมนู (บน admin shell)
+
+      // ให้เมนูซ้ายเปลี่ยนภาษาด้วย
+      if (window.AdminNav && typeof window.AdminNav.setLanguage === "function") {
+        window.AdminNav.setLanguage(currentLang);
+      }
+
+      if (window.AdminUser) {
+        window.AdminUser.setLanguage(currentLang);
+      }
+
+      if (!skipRender) {
+        renderDrivers();
+      }
+    }
+
+    function updateLangMenuActive() {
+      const langMenu = document.getElementById("langMenu");
+      if (!langMenu) return;
+      langMenu.querySelectorAll("button[data-lang]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === currentLang);
+      });
+    }
+
+    function changeLanguage(lang) {
+      if (!window.SW_Translations || !window.SW_Translations[lang]) return;
+
+      if (LangState && typeof LangState.setLang === "function") {
+        LangState.setLang(lang);
+        currentLang = LangState.getLang();
+      } else {
+        currentLang = lang;
+        localStorage.setItem("sw_lang", lang);
+      }
+
+      if (langSelect) langSelect.value = currentLang;
+      applyLanguage();
+      updateLangMenuActive(); // ⭐ เพิ่มบรรทัดนี้
+    }
+
+    if (langSelect) {
+      langSelect.addEventListener("change", e => changeLanguage(e.target.value));
+      langSelect.value = currentLang;
+    }
+
+    if (LangState && typeof LangState.onChange === "function") {
+      LangState.onChange(lang => {
+        if (lang && lang !== currentLang) {
+          currentLang = lang;
+          if (langSelect) langSelect.value = lang;
+          applyLanguage();
+          updateLangMenuActive();
+        }
+      });
+    }
+
+    if (togglePasswordBtn && passwordInput) {
+      togglePasswordBtn.addEventListener("click", () => {
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        togglePasswordBtn.classList.toggle("is-visible", isHidden);
+        const tMap =
+          (window.SW_Translations && window.SW_Translations[currentLang]) ||
+          (window.SW_Translations && window.SW_Translations.th) ||
+          {};
+        togglePasswordBtn.setAttribute(
+          "aria-label",
+          isHidden ? (tMap.hidePassword || "ซ่อนรหัสผ่าน") : (tMap.showPassword || "แสดงรหัสผ่าน")
+        );
+        togglePasswordBtn.setAttribute(
+          "title",
+          togglePasswordBtn.getAttribute("aria-label") || ""
+        );
+      });
+    }
+
+    window.addEventListener("load", () => {
+      updateLangMenuActive();
+    });
+
+    /* ---------- Init data ---------- */
+    (async () => {
+      showLoader();
+      try {
+        console.log("STEP 1: init start");
+
+        console.log("STEP 2: loadZones");
+        await loadZones();
+
+        console.log("STEP 3: loadDrivers");
+        await loadDrivers();
+
+        updateLangMenuActive();
+
+        console.log("STEP 4: applyLanguage");
+        applyLanguage(true);
+
+        console.log("STEP 5: done");
+
+      } catch (err) {
+        console.error("❌ INIT ERROR:", err);
+        alert(tr("errorInit"));
+      } finally {
+        hideLoader();
+      }
+    })();
+
+  </script>
+</body>
+
+</html>

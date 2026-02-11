@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="a_style.css">
+  <link rel="stylesheet" href="admin-shell.css">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    /* -------- Firebase -------- */
+    var firebaseConfig = {
+      apiKey: "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw",
+      authDomain: "smartwaste2568-1d792.firebaseapp.com",
+      databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "smartwaste2568-1d792",
+      storageBucket: "smartwaste2568-1d792.firebasestorage.app",
+      messagingSenderId: "1041339993312",
+      appId: "1:1041339993312:web:65b26ea83dcbf4f8b29485",
+      measurementId: "G-FV5TEPVZWN",
+      databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+  </script>
+  <!-- Auth + -->
+  <script src="../Login/auth.js"></script>
+  <script src="admin-lang.js"></script>
+  <script src="admin-shell.js" defer></script>
+  <script src="../i18n/lang.js"></script>
+  <script src="../i18n/th.js"></script>
+  <script src="../i18n/en.js"></script>
+  <script src="../i18n/ms.js"></script>
+  <script src="admin-user.js" defer></script>
+  <script src="admin-nav.js" defer></script>
+  <script src="admin-profile.js" defer></script>
+  <script src="admin-auth-bootstrap.js" defer></script>
+
+  <style>
+    /* Page head aligned with truck tracking */
+    .schedule-page {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 10px 12px 0;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 8px 0 18px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      color: #1f2937;
+    }
+
+    .page-sub {
+      margin: 6px 0 0;
+      color: #6b7280;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .page-actions {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    /* CTA button styled like truck page create */
+    #btnOpenScheduleForm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      min-height: 48px;
+      background: #10b981;
+      color: #fff;
+      border: 1px solid rgba(16, 185, 129, .32);
+      border-radius: 12px;
+      font-weight: 900;
+      letter-spacing: -0.1px;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, .2);
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+
+    #btnOpenScheduleForm:hover {
+      box-shadow: 0 14px 28px rgba(16, 185, 129, .26);
+      filter: brightness(1.03);
+    }
+
+    #btnOpenScheduleForm:active {
+      transform: translateY(1px) scale(.99);
+    }
+
+    #btnOpenScheduleForm .btnCreateLabel {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      transform: translateY(-1px);
+    }
+
+    #btnOpenScheduleForm .btn-icon {
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* เธเธณเธซเธเธ”เธเธญเธเน€เธ—เธเธ•เนเน€เธ•เนเธกเธเธงเนเธฒเธเนเธเธซเธเนเธฒเธเธตเน */
+    .content {
+      padding: 0;
+      margin: 0;
+    }
+
+    /* เธ•เธฒเธฃเธฒเธเธชเนเธ•เธฅเนเน€เธ”เธตเธขเธงเธเธฑเธเธฃเธฒเธขเธเธฒเธ/เธ•เธณเนเธซเธเนเธเธฃเธ– */
+    /* Card + table styling like truck page */
+    .schedule-table-card {
+      background: #fff;
+      border: 1px solid #e6ebf3;
+      border-radius: 18px;
+      box-shadow: 0 10px 22px rgba(17, 24, 39, .06);
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 12px 18px;
+      background: #fff;
+      border-bottom: 1px solid #e6ebf3;
+    }
+
+    .table-toolbar h4 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+      color: #1f2937;
+    }
+
+    .table-toolbar .muted {
+      margin: 4px 0 0;
+      font-weight: 500;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .table-toolbar .count-desc {
+      color: #10b981;
+      font-weight: 800;
+    }
+
+    .search-box {
+      position: relative;
+      margin-left: auto;
+      width: 280px;
+      max-width: 100%;
+    }
+
+    .search-box input {
+      width: 100%;
+      height: 44px;
+      min-height: 44px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      box-shadow: 0 10px 18px rgba(17, 24, 39, .02);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%239b5cff'/%3E%3Cstop offset='1' stop-color='%2322c1f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='11' cy='11' r='7' fill='url(%23g)'/%3E%3Ccircle cx='11' cy='11' r='5.25' fill='%23ffffff' opacity='0.45'/%3E%3Cline x1='16.65' y1='16.65' x2='21' y2='21' stroke='%234b5563' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+      background-size: 16px 16px;
+    }
+
+    .search-box input:focus {
+      outline: 2px solid rgba(14, 165, 233, .25);
+      border-color: rgba(14, 165, 233, .55);
+      outline-offset: 2px;
+    }
+
+    .count-desc {
+      font-weight: 500;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid #e6ebf3;
+      background: #f8fafc;
+      border-radius: 0;
+    }
+
+    .usage-table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font-size: 14px;
+      margin-top: -1px;
+    }
+
+    .usage-table th,
+    .usage-table td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 12px 12px;
+      border-bottom: 1px solid #e6ebf3;
+      color: #0f172a;
+      background: #fff;
+    }
+
+    .usage-table thead th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.2;
+      padding-top: 14px;
+      padding-bottom: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    .usage-table th:first-child,
+    .usage-table td:first-child {
+      text-align: left;
+    }
+
+    .usage-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .usage-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Schedule modal tweaks */
+    #scheduleModalBackdrop.modal-backdrop {
+      align-items: center;
+      justify-content: center;
+    }
+    #scheduleModalBackdrop .modal {
+      margin: 0 16px;
+    }
+    #scheduleForm .row > div {
+      min-width: 0;
+      flex: 1 1 100%;
+    }
+    #scheduleForm #weekPicker {
+      display: block;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f9fafb;
+      color: #0f172a;
+      font-size: 14px;
+      line-height: 1.3;
+      text-align: left;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #scheduleForm #weekPicker::-webkit-date-and-time-value {
+      text-align: left;
+    }
+    #scheduleForm #weekPicker::-webkit-date-and-time-value {
+      text-align: left;
+    }
+    #scheduleForm #weekPicker:focus {
+      outline: 3px solid #93c5fd;
+      border-color: #2563eb;
+      background: #fff;
+      outline-offset: 2px;
+    }
+
+    #scheduleForm .form-actions {
+      align-items: center;
+    }
+    #scheduleForm .form-actions #formStatus {
+      flex: 1 1 auto;
+    }
+    #scheduleForm .form-actions #btnSave {
+      margin-left: auto;
+    }
+
+    @media (max-width: 980px) {
+      .zone-areas {
+        display: none;
+      }
+    }
+
+    /* Mobile layout match truck page */
+    @media (max-width: 900px) {
+      .table-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 14px 14px 10px 14px;
+      }
+
+      .table-toolbar h4 {
+        margin: 0;
+        width: 100%;
+      }
+
+      .table-toolbar .search-box {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: 0;
+      }
+
+      .table-toolbar .search-box input {
+        width: 100%;
+      }
+
+      /* Keep the add-schedule CTA inside the flow on mobile (avoid hiding behind fixed header) */
+      .page-actions {
+        position: static;
+        width: 100%;
+        justify-content: flex-start;
+        padding-top: 4px;
+      }
+
+      #btnOpenScheduleForm {
+        width: 100%;
+      }
+
+      #scheduleForm #weekPicker {
+        font-size: 16px;
+      }
+
+      /* Center modal on mobile for schedule form */
+      #scheduleModalBackdrop.modal-backdrop {
+        align-items: center;
+        padding: 24px 0;
+      }
+
+      #scheduleModalBackdrop .modal {
+        margin: 0 16px;
+      }
+    }
+  </style>
+</head>
+
+<body data-active-nav="schedule">
+
+  <!-- Loader – -->
+  <div id="pageLoader" class="shell-loader">
+    <div class="loader-box">
+      <div class="loader-spinner"></div>
+      <div class="loader-text" id="loaderText"></div>
+    </div>
+  </div>
+
+  <main>
+
+    <div class="schedule-page">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title" id="mainTitle"></h1>
+          <p class="page-sub" id="mainSubtitle" style="margin:4px 0 0;"></p>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="primary" id="btnOpenScheduleForm">
+            <i class="ri-calendar-2-line btn-icon"></i>
+            <span class="btnCreateLabel" id="btnOpenScheduleFormLabel"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="schedule-table-card">
+          <div class="table-toolbar">
+            <div>
+              <h4 id="tableTitle"></h4>
+              <p class="muted count-desc" id="countLabel"></p>
+            </div>
+            <div class="search-box">
+              <input type="text" id="scheduleSearch" placeholder="">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="usage-table">
+              <thead>
+                <tr>
+                  <th id="thWorkDate"></th>
+                  <th id="thZoneArea"></th>
+                  <th id="thTruck"></th>
+                  <th id="thDriver"></th>
+                  <th id="thWorkStatus"></th>
+                  <th id="thCreatedBy"></th>
+                </tr>
+              </thead>
+
+              <tbody id="scheduleTbody">
+                <tr>
+                  <td colspan="6" class="muted" id="loadingText"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal-->
+  <div class="modal-backdrop" id="scheduleModalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="scheduleModalTitle"></div>
+        <button type="button" class="modal-close" id="btnScheduleClose">✕</button>
+      </div>
+
+      <form id="scheduleForm">
+
+        <!-- เน€เธฅเธทเธญเธเธงเธฑเธ -->
+        <div class="row">
+          <div>
+            <label id="labelPickDate"></label>
+            <input id="weekPicker" type="date" required />
+            <div class="muted" id="hintPickDate"></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+
+          <div>
+            <label id="labelZone"></label>
+            <select id="zoneSelect" required disabled>
+              <option value=""></option>
+            </select>
+          </div>
+        </div>
+
+        <!-- เธเธทเนเธเธ—เธตเน -->
+        <div class="row" id="areaWrapper" style="display:none;">
+          <div>
+            <label id="labelArea"></label>
+            <div id="areaCheckboxes"></div>
+          </div>
+        </div>
+
+        <!-- เธฃเธ– + เธเธเธเธฑเธ -->
+        <div class="row">
+          <div>
+            <label id="labelTruck"></label>
+            <select id="truckSelect" required disabled>
+              <option value=""></option>
+            </select>
+          </div>
+
+          <div>
+            <label id="labelDriver"></label>
+            <select id="driverSelect" required disabled>
+              <option value=""></option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ปุ่มยกเลิกและบันทึก -->
+        <div class="row form-actions" style="margin-top:12px;">
+          <div id="formStatus" class="muted"></div>
+          <button type="button" class="ghost" id="btnClear"></button>
+          <button type="submit" class="primary" id="btnSave"></button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  <!-- Modal เนเธเนเธเน€เธ•เธทเธญเธเธเนเธญเธเธ—เธฑเธ -->
+  <div class="modal-backdrop" id="conflictBackdrop" style="display:none;">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <div class="modal-title" id="conflictTitle"></div>
+        <button type="button" class="modal-close" id="conflictClose">✕</button>
+      </div>
+
+      <div style="padding:16px;">
+        <p id="conflictMessage" style="white-space:pre-line;"></p>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+          <button class="ghost" id="btnConflictCancel"></button>
+          <button class="primary" id="btnConflictConfirm"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    firebase.firestore().enableNetwork().catch(console.error);
+
+    const fs = firebase.firestore();
+    const zonesCol = fs.collection("zones");
+    const trucksCol = fs.collection("trucks");
+    const usersCol = fs.collection("users");
+    const scheduleCol = fs.collection("truck_schedule");
+
+    /* DOM */
+
+    const zoneSelect = document.getElementById("zoneSelect");
+    const truckSelect = document.getElementById("truckSelect");
+    const driverSelect = document.getElementById("driverSelect");
+    const formStatus = document.getElementById("formStatus");
+    const scheduleTbody = document.getElementById("scheduleTbody");
+    const countLabel = document.getElementById("countLabel");
+    const scheduleSearch = document.getElementById("scheduleSearch");
+    const weekPicker = document.getElementById("weekPicker");
+    const btnClear = document.getElementById("btnClear");
+    let isSaving = false;
+    const areaWrapper = document.getElementById("areaWrapper");
+    // ===== popup เนเธเนเธเน€เธ•เธทเธญเธเธเนเธณ =====
+    const conflictBackdrop = document.getElementById("conflictBackdrop");
+    const conflictMessageEl = document.getElementById("conflictMessage");
+    const btnConflictCancel = document.getElementById("btnConflictCancel");
+    const btnConflictConfirm = document.getElementById("btnConflictConfirm");
+    const conflictClose = document.getElementById("conflictClose");
+
+    let pendingSaveCallback = null;
+
+    function openConflictPopup(message) {
+      conflictMessageEl.textContent = message;
+      pendingSaveCallback = null; // โ เนเธกเนเธ•เนเธญเธเธกเธต callback
+      conflictBackdrop.style.display = "flex";
+      lockBodyScroll(true);
+      btnConflictConfirm.style.display = "none";
+    }
+
+    function closeConflictPopup() {
+      conflictBackdrop.style.display = "none";
+      lockBodyScroll(false);
+      btnConflictConfirm.style.display = "";
+    }
+
+    btnConflictCancel.addEventListener("click", () => {
+      closeConflictPopup();
+      isSaving = false;
+      btnSave.disabled = false;
+      btnSave.textContent = tr("btnSave");
+    });
+
+    conflictClose.addEventListener("click", () => {
+      btnConflictCancel.click();
+    });
+
+    const btnOpenScheduleForm = document.getElementById("btnOpenScheduleForm");
+    const scheduleModalBackdrop = document.getElementById("scheduleModalBackdrop");
+    const btnScheduleClose = document.getElementById("btnScheduleClose");
+
+    let zones = [];
+    let trucks = []; // ๐‘ เน€เธเนเธเธเนเธญเธกเธนเธฅเธฃเธ–เธ—เธฑเนเธเธซเธกเธ”
+    let drivers = []; // ๐‘ เน€เธเนเธเธเนเธญเธกเธนเธฅเธเธเธเธฑเธเธ—เธฑเนเธเธซเธกเธ”
+    let schedules = [];
+    let workStatusMap = {};
+    let searchTerm = "";
+    let isLoading = true;
+
+    function setMinDateToday() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      if (weekPicker) weekPicker.min = `${yyyy}-${mm}-${dd}`;
+    }
+
+    if (scheduleSearch) {
+      scheduleSearch.addEventListener("input", (e) => {
+        searchTerm = (e.target.value || "").toLowerCase().trim();
+        renderSchedules();
+      });
+    }
+
+    function lockAllSelectors() {
+      zoneSelect.disabled = true;
+      truckSelect.disabled = true;
+      driverSelect.disabled = true;
+    }
+
+    function lockBodyScroll(lock) {
+      document.body.classList.toggle("modal-open", !!lock);
+    }
+
+    const LangState = window.AdminLang || null;
+    let currentLang = (LangState && typeof LangState.getLang === "function")
+      ? LangState.getLang()
+      : (localStorage.getItem("sw_lang") || "th");
+    const langSelect = document.getElementById("langSelect");
+    const langIconBtn = document.getElementById("langIconBtn");
+    const langMenu = document.getElementById("langMenu");
+    if (langIconBtn && !langIconBtn.querySelector("i")) {
+      langIconBtn.innerHTML = '<i class="ri-global-line"></i>';
+    }
+    const pageLoader = document.getElementById("pageLoader");
+    const loaderTextEl = document.getElementById("loaderText");
+
+    function showLoader(text) {
+      if (text && loaderTextEl) loaderTextEl.textContent = text;
+      if (pageLoader) pageLoader.classList.add("show");
+    }
+    function hideLoader() {
+      if (pageLoader) pageLoader.classList.remove("show");
+    }
+
+    function tr(key) {
+      const dict =
+        (window.SW_Translations && window.SW_Translations[currentLang]) ||
+        (window.SW_Translations && window.SW_Translations.th) ||
+        {};
+      return dict[key] !== undefined ? dict[key] : key;
+    }
+
+    function setFormStatusText(text, type) {
+      formStatus.textContent = text || "";
+      formStatus.className = "muted" + (type === "ok" ? " ok" : type === "err" ? " err" : "");
+    }
+
+    function clearFormAlert() {
+      setFormStatusText("", "");
+    }
+
+    function updateLangMenuActive() {
+      if (!langMenu) return;
+
+      const lang =
+        (window.AdminLang && typeof window.AdminLang.getLang === "function")
+          ? window.AdminLang.getLang()
+          : currentLang;
+
+      langMenu.querySelectorAll("button[data-lang]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === lang);
+      });
+    }
+
+    function setText(id, key) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = tr(key);
+    }
+
+    function applyLanguage() {
+      currentLang =
+        (window.AdminLang && typeof window.AdminLang.getLang === "function")
+          ? window.AdminLang.getLang()
+          : currentLang;
+
+      document.body.setAttribute("data-lang", currentLang);
+      document.documentElement.setAttribute("lang", currentLang);
+
+      // ===== Page =====
+      document.title = tr("pageTitle_schedule");
+      setText("mainTitle", "mainTitle_schedule");
+
+      // ===== Form / Modal =====
+      setText("labelPickDate", "labelPickDate");
+      setText("hintPickDate", "hintPickDate");
+      setText("labelArea", "labelArea");
+
+      setText("scheduleModalTitle", "formTitle");
+      setText("labelZone", "labelZone");
+      setText("labelTruck", "labelTruck");
+      setText("labelDriver", "labelDriver");
+      setText("btnClear", "btnClear");
+      setText("btnSave", "btnSave");
+
+      // ===== Conflict modal =====
+      setText("conflictTitle", "conflictTitle");
+      setText("btnConflictCancel", "btnCancel");
+      setText("btnConflictConfirm", "btnConfirm");
+
+      // ===== Header =====
+      setText("addScheduleHeaderTitle", "addScheduleHeaderTitle");
+      setText("btnOpenScheduleFormLabel", "btnOpenSchedule");
+      setText("mainSubtitle", "pageSubtitle_schedule");
+
+      // ===== Table =====
+      setText("tableTitle", "tableTitle");
+      setText("thWorkDate", "thWorkDate");
+      setText("thZoneArea", "thZoneArea");
+      setText("thTruck", "thTruck");
+      setText("thDriver", "thDriver");
+      setText("thWorkStatus", "thWorkStatus");
+      setText("thCreatedBy", "thCreatedBy");
+      setText("loadingText", "loadingText");
+
+      if (scheduleSearch) {
+        scheduleSearch.placeholder = tr("scheduleSearch");
+      }
+
+      if (weekPicker) {
+        const inputLang = currentLang === "th" ? "th-TH" : currentLang === "ms" ? "ms-MY" : "en";
+        weekPicker.setAttribute("lang", inputLang);
+      }
+
+      // ===== Select placeholder =====
+      if (zoneSelect?.options?.length) {
+        zoneSelect.options[0].textContent = tr("zonePlaceholder");
+      }
+
+      if (truckSelect.disabled) {
+        truckSelect.innerHTML = `<option value="">${tr("truckPlaceholder")}</option>`;
+      }
+      if (driverSelect.disabled) {
+        driverSelect.innerHTML = `<option value="">${tr("driverPlaceholder")}</option>`;
+      }
+
+      // ===== Sync เธชเนเธงเธเธเธฅเธฒเธ =====
+      if (window.AdminNav?.setLanguage) {
+        window.AdminNav.setLanguage(currentLang);
+      }
+      if (window.AdminUser?.setLanguage) {
+        window.AdminUser.setLanguage(currentLang);
+      }
+      if (window.AdminProfile?.setLanguage) {
+        window.AdminProfile.setLanguage(currentLang);
+      }
+
+      renderSchedules();
+      updateLangMenuActive();
+    }
+
+    function changeLanguage(lang) {
+      if (!window.SW_Translations || !window.SW_Translations[lang]) return;
+
+      if (LangState && typeof LangState.setLang === "function") {
+        LangState.setLang(lang);
+        currentLang = LangState.getLang();
+      } else {
+        currentLang = lang;
+        localStorage.setItem("sw_lang", lang);
+      }
+
+      if (langSelect) langSelect.value = currentLang;
+      applyLanguage();
+    }
+
+    if (langSelect) {
+      langSelect.addEventListener("change", e => changeLanguage(e.target.value));
+      langSelect.value = currentLang;
+    }
+
+    if (langIconBtn && langMenu) {
+      langIconBtn.addEventListener("click", () => {
+        langMenu.classList.toggle("show");
+      });
+
+      langMenu.addEventListener("click", e => {
+        const btn = e.target.closest("button[data-lang]");
+        if (!btn) return;
+        changeLanguage(btn.dataset.lang);
+        langMenu.classList.remove("show");
+      });
+    }
+
+    if (LangState && typeof LangState.onChange === "function") {
+      LangState.onChange(lang => {
+        if (lang && lang !== currentLang) {
+          currentLang = lang;
+          if (langSelect) langSelect.value = lang;
+          applyLanguage();
+        }
+      });
+    }
+
+    // เธเธดเธ”เน€เธกเธเธนเธ เธฒเธฉเธฒ (เนเธกเนเธขเธธเนเธเธเธฑเธ sidebar เน€เธเธฃเธฒเธฐเนเธเน backdrop เนเธฅเนเธง)
+    if (langMenu && langIconBtn) {
+      document.addEventListener("click", e => {
+        const clickedInLang = langMenu.contains(e.target) || langIconBtn.contains(e.target);
+        if (!clickedInLang) langMenu.classList.remove("show");
+      });
+    }
+
+    /* เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเน€เธฃเธดเนเธกเธ•เนเธ (Zones, Trucks, Drivers) */
+    async function loadInitialData() {
+      const snapZones = await zonesCol.get();
+      console.log("zones size =", snapZones.size);
+
+      try {
+        // ===== 1. ZONES =====
+        const snapZones = await zonesCol.get();
+        zones = [];
+        zoneSelect.innerHTML =
+          `<option value="">${tr("zonePlaceholder")}</option>`;
+
+        for (const doc of snapZones.docs) {
+          const zoneId = doc.id;
+          const zData = doc.data();
+
+          const zoneObj = {
+            id: zoneId,
+            name: zData.name || zoneId,
+            areas: []
+          };
+
+          // dropdown zone
+          const opt = document.createElement("option");
+          opt.value = zoneId;
+          opt.textContent = zoneObj.name;
+          zoneSelect.appendChild(opt);
+
+          // ===== areas =====
+          const areaSnap = await zonesCol.doc(zoneId).collection("areas").get();
+          areaSnap.forEach(a => {
+            zoneObj.areas.push({
+              id: a.id,
+              name: a.data().name || a.id
+            });
+          });
+
+          zones.push(zoneObj);
+        }
+
+        console.log("Zones loaded:", zones);
+      } catch (err) {
+        console.error("loadInitialData error", err);
+        alert(tr("alertLoadZoneFail"));
+      }
+    }
+
+    function renderAreaCheckboxes(zoneId) {
+      const wrapper = document.getElementById("areaCheckboxes");
+      wrapper.innerHTML = "";
+
+      const z = zones.find(z => z.id === zoneId);
+      if (!z || !z.areas.length) {
+        wrapper.innerHTML =
+          "<div class='muted'>" + tr("areaNoData") + "</div>";
+        return;
+      }
+
+      z.areas.forEach(a => {
+        const label = document.createElement("label");
+        label.style.display = "block";
+        label.innerHTML = `
+      <input type="checkbox" value="${a.id}" data-name="${a.name}">
+      ${a.name}
+    `;
+        wrapper.appendChild(label);
+      });
+    }
+
+    async function loadTrucks(zoneId) {
+      truckSelect.innerHTML =
+        `<option value="">${tr("truckPlaceholder")}</option>`;
+      truckSelect.disabled = true;
+
+      try {
+        const snap = await fs
+          .collection("trucks")
+          .doc(zoneId)
+          .collection("vehicles")   // โ… เธ•เธฃเธเธเธฑเธ Firestore เธเธฃเธดเธ
+          .get();
+
+        if (snap.empty) {
+          truckSelect.innerHTML =
+            '<option value="">' + tr("truckNoData") + '</option>';
+          return;
+        }
+
+        snap.forEach(doc => {
+          const d = doc.data();
+          const opt = document.createElement("option");
+          opt.value = doc.id; // เน€เธเนเธ TRUCK_Y001
+          opt.textContent = d.truckId || doc.id;
+          truckSelect.appendChild(opt);
+        });
+
+      } catch (err) {
+        console.error("loadTrucks error", err);
+        truckSelect.innerHTML =
+          '<option value="">' + tr("truckLoadFail") + '</option>';
+      }
+
+      truckSelect.disabled = false;
+    }
+
+    async function loadDrivers(zoneId) {
+      driverSelect.innerHTML =
+        `<option value="">${tr("driverPlaceholder")}</option>`;
+      driverSelect.disabled = true;
+
+      const snap = await usersCol
+        .where("status", "==", 1)
+        .where("zoneId", "==", zoneId)
+        .where("isDeleted", "==", false)
+        .get();
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        const opt = document.createElement("option");
+        opt.value = doc.id;
+        opt.textContent = `${d.driverId} - ${d.fullName}`;
+        driverSelect.appendChild(opt);
+      });
+
+      driverSelect.disabled = false;
+    }
+
+    zoneSelect.addEventListener("change", () => {
+      const zoneId = zoneSelect.value;
+      if (!zoneId) return;
+
+      areaWrapper.style.display = "block";
+      renderAreaCheckboxes(zoneId);
+
+      loadTrucks(zoneId);
+      loadDrivers(zoneId);
+    });
+
+    weekPicker.addEventListener("change", () => {
+      zoneSelect.disabled = false;
+    });
+
+    function isBeyond4Weeks(dateStr) {
+      const pick = new Date(dateStr);
+      const now = new Date();
+      return (pick - now) / (1000 * 60 * 60 * 24) > 28;
+    }
+
+    async function checkScheduleExists(zoneId, workDate) {
+      const docRef = fs
+        .collection("truck_schedule")
+        .doc(zoneId)
+        .collection("days")
+        .doc(workDate);
+
+      const snap = await docRef.get();
+      return snap.exists;
+    }
+
+    document.getElementById("scheduleForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (isSaving) return;
+
+      isSaving = true;
+      btnSave.disabled = true;
+      btnSave.textContent = tr("statusSaving");
+
+      const pickDate = weekPicker.value;
+      const zone = zoneSelect.value;
+      const truck = truckSelect.value;
+      const driver = driverSelect.value;
+
+      // ๐”ฝ เธเธทเนเธเธ—เธตเนเธเธฒเธ checkbox
+      const areas = Array.from(
+        document.querySelectorAll("#areaCheckboxes input:checked")
+      ).map(cb => ({
+        areaId: cb.value,
+        areaName: cb.dataset.name
+      }));
+
+      if (!pickDate || !zone || !truck || !driver) {
+        alert(tr("alertFillAll"));
+        resetSaveState();
+        return;
+      }
+
+      if (!areas.length) {
+        alert(tr("alertSelectArea"));
+        resetSaveState();
+        return;
+      }
+
+      if (isBeyond4Weeks(pickDate)) {
+        setFormStatusText(tr("statusAdvanceLimit"), "err");
+        resetSaveState();
+        return;
+      }
+
+      // ===== เธเนเธญเธขเน€เธเนเธเธเนเธณเธ•เธฃเธเธเธตเน =====
+      const isDuplicate = await checkScheduleExists(zone, pickDate);
+
+      if (isDuplicate) {
+        openConflictPopup(tr("conflictSameDay"));
+        resetSaveState();
+        return;
+      }
+
+
+      try {
+        const zoneName =
+          zoneSelect.options[zoneSelect.selectedIndex]?.textContent || "";
+
+        const truckName =
+          truckSelect.options[truckSelect.selectedIndex]?.textContent || "";
+
+        const driverName =
+          driverSelect.options[driverSelect.selectedIndex]?.textContent || "";
+
+        await fs
+          .collection("truck_schedule")
+          .doc(zone)
+          .collection("days")
+          .doc(pickDate)
+          .set({
+            workDate: pickDate,
+            zoneId: zone,
+            zoneName,
+            areas,
+            truckId: truck,
+            truckName,
+            driverId: driver,
+            driverName,
+            createdBy:
+              window.ADMIN_AUTH?.fullName ||
+              window.ADMIN_AUTH?.username ||
+              "admin",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+        setFormStatusText(tr("statusSaveOk"), "ok");
+        resetScheduleForm();
+        closeScheduleModal();
+
+      } catch (err) {
+        console.error(err);
+        setFormStatusText(err.message || tr("statusError"), "err");
+      } finally {
+        resetSaveState();
+      }
+    });
+
+
+
+    function resetSaveState() {
+      isSaving = false;
+      btnSave.disabled = false;
+      btnSave.textContent = tr("btnSave");
+    }
+
+    function resetScheduleForm() {
+      // reset native form
+      document.getElementById("scheduleForm").reset();
+
+      // เน€เธเธฅเธตเธขเธฃเน date
+      weekPicker.value = "";
+
+      // reset zone
+      zoneSelect.value = "";
+      zoneSelect.disabled = true;
+
+      // เธเนเธญเธ area + เธฅเนเธฒเธ checkbox
+      areaWrapper.style.display = "none";
+      document.getElementById("areaCheckboxes").innerHTML = "";
+
+      // reset truck
+      truckSelect.disabled = true;
+      truckSelect.innerHTML =
+        `<option value="">${tr("truckPlaceholder")}</option>`;
+
+      // reset driver
+      driverSelect.disabled = true;
+      driverSelect.innerHTML =
+        `<option value="">${tr("driverPlaceholder")}</option>`;
+
+      // เน€เธเธฅเธตเธขเธฃเนเธเนเธญเธเธงเธฒเธกเธชเธ–เธฒเธเธฐ
+      clearFormAlert();
+      setFormStatusText("", "");
+    }
+
+    /* เธเธธเนเธกเธฅเนเธฒเธเธเธญเธฃเนเธก */
+    btnClear.addEventListener("click", () => {
+      weekPicker.value = "";
+      zoneSelect.value = "";
+
+      areaWrapper.style.display = "none";
+      document.getElementById("areaCheckboxes").innerHTML = "";
+
+      truckSelect.disabled = true;
+      driverSelect.disabled = true;
+      truckSelect.innerHTML = '<option value="">' + tr("truckPlaceholder") + '</option>';
+      driverSelect.innerHTML = '<option value="">' + tr("driverPlaceholder") + '</option>';
+
+      setFormStatusText("", "");
+      clearFormAlert();
+    });
+
+    /* Modal เธเธญเธฃเนเธกเธเธฑเธ”เธ•เธฒเธฃเธฒเธ */
+    function openScheduleModal() {
+      resetScheduleForm();   // โ… เธเธฑเธเธเธฑเธ reset เธ—เธธเธเธเธฃเธฑเนเธ
+      lockAllSelectors();
+      scheduleModalBackdrop.classList.add("show");
+      lockBodyScroll(true);
+    }
+
+
+    function closeScheduleModal() {
+      isSaving = false;
+      btnSave.disabled = false;
+      btnSave.textContent = tr("btnSave");
+
+      clearFormAlert(); // ๐‘ เน€เธเธฅเธตเธขเธฃเนเนเธเนเธเน€เธ•เธทเธญเธเธ—เธฑเธเธ—เธต
+
+      scheduleModalBackdrop.classList.remove("show");
+      lockBodyScroll(false);
+    }
+
+    btnOpenScheduleForm.addEventListener("click", openScheduleModal);
+    btnScheduleClose.addEventListener("click", closeScheduleModal);
+
+    scheduleModalBackdrop.addEventListener("click", (e) => {
+      if (e.target === scheduleModalBackdrop) {
+        closeScheduleModal();
+      }
+    });
+
+    function toYMD(dateObj) {
+      // เนเธเธฅเธเน€เธเนเธ yyyy-mm-dd (เธ•เธฒเธกเธฃเธนเธเนเธเธ workDate เธ—เธตเนเน€เธเนเธเนเธ schedule)
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    /* เนเธซเธฅเธ”เธ•เธฒเธฃเธฒเธ */
+    function matchesSearchFilter(schedule, term) {
+      if (!term) return true;
+      const localizedDate = schedule.workDate
+        ? new Date(schedule.workDate).toLocaleDateString(
+          currentLang === "en" ? "en-GB" :
+            currentLang === "ms" ? "ms-MY" : "th-TH"
+        )
+        : "";
+      const haystack = [
+        schedule.workDate || "",
+        localizedDate,
+        schedule.zoneName || "",
+        (schedule.areas || []).map(a => a.areaName).join(", "),
+        schedule.truckName || "",
+        schedule.driverName || "",
+        schedule.createdBy || ""
+      ].join(" ").toLowerCase();
+      return haystack.includes(term);
+    }
+    function renderSchedules() {
+      if (!scheduleTbody) return;
+
+      if (isLoading) {
+        if (countLabel) countLabel.textContent = "";
+        scheduleTbody.innerHTML = `<tr><td colspan="6" class="muted">${tr("loadingText")}</td></tr>`;
+        showLoader(tr("loadingText"));
+        return;
+      }
+
+      hideLoader();
+
+      if (!schedules.length) {
+        if (countLabel) countLabel.textContent = tr("countPrefix") + " 0 " + tr("countSuffix");
+        scheduleTbody.innerHTML = '<tr><td colspan="6" class="muted">' + tr("noData") + '</td></tr>';
+        return;
+      }
+
+      const filtered = schedules.filter(s => matchesSearchFilter(s, searchTerm));
+      const displayList = filtered;
+
+      if (countLabel) countLabel.textContent =
+        tr("countPrefix") + " " + displayList.length + " " + tr("countSuffix");
+
+      if (!displayList.length) {
+        scheduleTbody.innerHTML = '<tr><td colspan="6" class="muted">' + tr("noData") + '</td></tr>';
+        return;
+      }
+
+      scheduleTbody.innerHTML = displayList.map(s => {
+        const key = `${s._zoneId}_${s.truckId}_${s.workDate}`;
+        const status = workStatusMap[key]; // "ONTIME" | "LATE" | "NOT_DONE"
+
+        let badgeHtml = "";
+        if (status === "ONTIME") {
+          badgeHtml = `<span class="badge badge-status-ontime">${tr("workCompletedOnTime")}</span>`;
+        } else if (status === "LATE") {
+          badgeHtml = `<span class="badge badge-status-late">${tr("workCompletedLate")}</span>`;
+        } else {
+          badgeHtml = `<span class="badge badge-status-notdone">${tr("workNotFinished")}</span>`;
+        }
+
+        return `
+        <tr>
+          <td>${new Date(s.workDate).toLocaleDateString(
+          currentLang === "en" ? "en-GB" :
+            currentLang === "ms" ? "ms-MY" : "th-TH"
+        )}</td>
+
+          <td>
+            <strong>${s.zoneName}</strong><br>
+            <span class="muted zone-areas">${(s.areas || []).map(a => a.areaName).join(", ")}</span>
+          </td>
+
+          <td>${s.truckName}</td>
+          <td>${s.driverName}</td>
+
+          <td>${badgeHtml}</td>
+
+          <td>${s.createdBy}</td>
+        </tr>
+      `;
+      }).join("");
+    }
+    function setupScheduleListener() {
+      schedules = [];
+      workStatusMap = {}; // เธเธฑเธเธเนเธฒเธ
+      isLoading = true;
+      let pendingZones = 0;
+      const zoneFirstSnapshot = new Set();
+      renderSchedules(); // เนเธชเธ”เธเธชเธ–เธฒเธเธฐเธเธณเธฅเธฑเธเนเธซเธฅเธ”
+
+      zonesCol.get().then(zoneSnap => {
+        pendingZones = zoneSnap.size || 0;
+        if (!pendingZones) {
+          isLoading = false;
+          renderSchedules();
+          hideLoader();
+          return;
+        }
+
+        zoneSnap.forEach(zoneDoc => {
+          const zoneId = zoneDoc.id;
+
+          fs.collection("truck_schedule")
+            .doc(zoneId)
+            .collection("days")
+            .orderBy("createdAt", "desc")     // ✅ เพิ่มล่าสุดก่อน
+            .onSnapshot(async (sn) => {
+              if (!zoneFirstSnapshot.has(zoneId)) {
+                zoneFirstSnapshot.add(zoneId);
+                pendingZones -= 1;
+              }
+
+              // เธฅเธเน€เธเธเธฒเธฐเธเนเธญเธกเธนเธฅเน€เธ”เธดเธกเธเธญเธเนเธเธเธเธตเน
+              schedules = schedules.filter(s => s._zoneId !== zoneId);
+
+              const temp = [];
+
+              for (const doc of sn.docs) {
+                const d = doc.data();
+                const workDate = d.workDate;   // "yyyy-mm-dd"
+                const truckId = d.truckId;
+
+                let status = "NOT_DONE"; // ๐”ด default
+
+                try {
+                  const runSnap = await fs
+                    .collection("trucks")
+                    .doc(zoneId)
+                    .collection("vehicles")
+                    .doc(truckId)
+                    .collection("truck_operating_time")
+                    .doc(workDate)
+                    .get();
+
+                  if (runSnap.exists) {
+                    const runData = runSnap.data();
+                    const isFinished = runData.isFinished === true;
+
+                    if (isFinished) {
+                      // เนเธเน finishedAt เธเนเธญเธ เธ–เนเธฒเนเธกเนเธกเธตเธเนเธญเธขเนเธเน endAt
+                      const ts = runData.finishedAt || runData.endAt;
+
+                      if (ts && typeof ts.toDate === "function") {
+                        const finishedDateStr = toYMD(ts.toDate());
+
+                        status = (finishedDateStr === workDate)
+                          ? "ONTIME"   // โ… เน€เธเธตเธขเธง
+                          : "LATE";    // ๐ก เน€เธซเธฅเธทเธญเธ
+                      } else {
+                        // เน€เธชเธฃเนเธเนเธ•เนเนเธกเนเธกเธตเน€เธงเธฅเธฒเนเธซเนเน€เธ—เธตเธขเธเธงเธฑเธ
+                        status = "LATE";
+                      }
+                    } else {
+                      status = "NOT_DONE";
+                    }
+                  } else {
+                    status = "NOT_DONE";
+                  }
+                } catch (e) {
+                  console.warn("เธญเนเธฒเธเธชเธ–เธฒเธเธฐเธเธฒเธเนเธกเนเธชเธณเน€เธฃเนเธ", e);
+                  status = "NOT_DONE";
+                }
+
+                const statusKey = `${zoneId}_${truckId}_${workDate}`;
+                workStatusMap[statusKey] = status;
+
+                temp.push({
+                  _zoneId: zoneId,
+                  workDate: d.workDate,
+                  zoneName: d.zoneName,
+                  areas: d.areas || [],
+                  truckId: truckId,
+                  truckName: d.truckName,
+                  driverName: d.driverName,
+                  createdBy: d.createdBy,
+                  createdAt: d.createdAt || null,
+                  created: d.createdAt?.toDate()?.toLocaleString?.() || ""
+                });
+              }
+
+              schedules.push(...temp);
+
+             
+              schedules.sort((a, b) => {
+                const atA = a.createdAt?.toMillis?.() || 0;
+                const atB = b.createdAt?.toMillis?.() || 0;
+                if (atB !== atA) return atB - atA; // ✅ เพิ่มล่าสุดก่อน
+                return (b.workDate || "").localeCompare(a.workDate || "");
+              });
+
+              isLoading = false;
+              renderSchedules();
+              if (pendingZones <= 0) {
+                hideLoader();
+              }
+            });
+        });
+      }).catch(err => {
+        console.error("load zones failed", err);
+        isLoading = false;
+        renderSchedules();
+        hideLoader();
+      });
+    }
+
+    (async () => {
+      if (langSelect) langSelect.value = currentLang;
+      showLoader(tr("loadingText"));
+      setMinDateToday();
+      await loadInitialData(); 
+      setupScheduleListener();
+      applyLanguage();
+    })();
+  </script>
+
+</body>
+
+</html>

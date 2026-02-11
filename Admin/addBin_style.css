@@ -1,0 +1,1160 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Prompt", "Segoe UI", system-ui, sans-serif
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f6fa;
+    flex-direction: row;
+}
+
+/* ล็อกหน้าเว็บไม่ให้เลื่อนตอนเปิดโมดอล */
+body.modal-open {
+    overflow: hidden;
+    height: 100vh;
+    touch-action: none;
+    /* กันเลื่อนในมือถือ */
+}
+
+
+/* ─ Sidebar ─ */
+.sidebar {
+    width: 250px;
+    background: #2f3640;
+    color: #f5f6fa;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    transition: .3s;
+}
+
+.sidebar h2 {
+    text-align: center;
+    color: #00a8ff;
+    margin-bottom: 25px;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.sidebar .sw-logout-slot {
+    margin-top: 0 !important;
+    margin-left: 18px;
+    margin-right: 18px;
+    margin-bottom: 24px;
+    padding: 0;
+}
+
+.menu a {
+    display: block;
+    color: #f5f6fa;
+    padding: 14px 20px;
+    text-decoration: none;
+    border-left: 4px solid transparent;
+    transition: .3s;
+}
+
+.menu a:hover,
+.menu a.active {
+    background: #353b48;
+    border-left: 4px solid #00a8ff;
+}
+
+.sidebar .sw-logout-slot .sw-logout-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 20px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 10px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.sidebar .sw-logout-slot .sw-logout-btn:hover,
+.sidebar .sw-logout-slot .sw-logout-btn:focus {
+    background: #b91c1c;
+    border-left: 0;
+}
+
+/* ─ ปุ่มเปิด/ปิดเมนู (มือถือ) ─ */
+.toggle-btn {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    background: #00a8ff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+main {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+h1 {
+    color: #2f3640;
+    margin-bottom: 16px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.topbar-right {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 1000;
+    gap: 8px;
+}
+
+fieldset {
+    border: 1px solid #e3e3e3;
+    border-radius: 12px;
+    margin: 16px 0;
+    padding: 16px;
+}
+
+legend {
+    font-weight: bold;
+}
+
+label {
+    display: block;
+    margin: 10px 0 6px;
+    font-size: 14px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 60px;
+    white-space: pre-wrap;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.row>div {
+    flex: 1 1 240px;
+}
+
+button {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.ghost {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+/* ปุ่มยืนยันอุปกรณ์ (หลังยืนยันแล้ว) */
+button.confirmed {
+    background-color: #f4f4f5;
+    /* น้ำเงิน */
+    color: #000000;
+    border-color: #f4f4f5;
+}
+
+.muted {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.ok {
+    color: #16a34a;
+}
+
+.err {
+    color: #dc2626;
+}
+
+.error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, .15);
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.form-actions {
+    align-items: center;
+}
+
+.form-actions #msg {
+    flex: 1 1 auto;
+}
+
+.form-actions .actions {
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+.gps-actions {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.gps-actions>button {
+    flex: 1 1 180px;
+}
+
+.preview {
+    display: block;
+    margin-top: 8px;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+/* ========== ส่วนหัวฟอร์มเพิ่มถัง + ปุ่มเพิ่มถัง ========== */
+.add-bin-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    margin-top: 4px;
+}
+
+/* ซ่อนหัวข้อ "เพิ่มข้อมูลถังขยะ" ให้เหลือแค่ปุ่ม */
+.add-bin-title {
+    display: none;
+}
+
+.add-bin-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* ========== ส่วนรายการถัง + ตัวกรอง ========== */
+.section-title {
+    margin-top: 24px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.section-hint {
+    margin: 4px 0 10px;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.filter-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 0;
+    min-width: 180px;
+}
+
+.filter-field span {
+    font-size: 12px;
+    color: #4b5563;
+}
+
+.filter-field select,
+.filter-field input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #d4d4d8;
+    font-size: 14px;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 6px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5f5;
+    border-radius: 999px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+}
+
+th,
+td {
+    border-bottom: 1px solid #eee;
+    padding: 8px 10px;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+th {
+    background: #fafafa;
+}
+
+.bin-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ปรับขนาดไอคอน แก้ไข/ลบ ให้เล็กลง และให้แสดงในมือถือ */
+.bin-actions .icon-btn {
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+    border-radius: 999px;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.bin-actions .icon-btn svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.icon-edit-btn svg {
+    fill: #2563eb;
+}
+
+.icon-delete-btn svg {
+    fill: #dc2626;
+}
+
+.icon-btn:focus {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+    .bin-actions .icon-btn {
+        width: 28px;
+        height: 28px;
+        padding: 3px;
+    }
+
+    .bin-actions .icon-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Modal zones + edit bin + add bin ใช้สไตล์เดียวกัน */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    /* Z-index สำหรับ Add Bin และ Edit Bin */
+}
+
+.modal-backdrop.zone-area-modal {
+    z-index: 1600;
+    /* Z-index สำหรับ Zone/Area Modal ให้สูงกว่า Add Bin */
+}
+
+.modal-backdrop.show {
+    display: flex;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 18px 12px;
+    max-width: 620px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, .35);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#addBinBackdrop .modal {
+    border-radius: 22px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    /* ลดช่องว่างหัวข้อ ↔ เขตพื้นที่ ให้ชิดขึ้น */
+}
+
+.modal-title {
+    font-size: 20px;
+    /* ขยายขนาดตัวอักษร “เพิ่มข้อมูลถังขยะ” */
+    font-weight: 700;
+    color: #111827;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+}
+
+.zone-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.zone-row input {
+    flex: 1;
+    padding: 7px 10px;
+    font-size: 14px;
+    border-radius: 10px;
+    border: 1px solid #d4d4d8;
+}
+
+.zone-row button {
+    font-size: 12px;
+    padding: 6px 9px;
+    border-radius: 8px;
+}
+
+.zone-row .danger {
+    background: #ef4444;
+    color: #fff;
+}
+
+.zone-row .primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.modal-footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ========== OVERRIDES ให้หน้าตาเท่ากันทุกหน้า (เหมือน home) ========== */
+:root {
+    --btn-min-h: 44px;
+    --btn-pad-x: 16px;
+    --btn-pad-y: 10px;
+    --btn-radius: 12px;
+    --btn-font: 16px;
+}
+
+h1 {
+    margin: 0 0 16px;
+    line-height: 1.25;
+}
+
+legend {
+    line-height: 1.35;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select,
+textarea,
+button {
+    min-height: var(--btn-min-h);
+    padding: var(--btn-pad-y) var(--btn-pad-x);
+    border-radius: var(--btn-radius);
+    font-size: var(--btn-font);
+    line-height: 1.2;
+}
+
+button,
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease;
+    border: 0;
+}
+
+.primary:hover {
+    filter: brightness(1.05);
+}
+
+.primary:active {
+    transform: translateY(1px);
+}
+
+.ghost:hover {
+    filter: brightness(0.98);
+}
+
+.ghost:active {
+    transform: translateY(1px);
+}
+
+.toggle-btn {
+    min-height: var(--btn-min-h);
+    padding: var(--btn-pad-y) var(--btn-pad-x);
+    border-radius: var(--btn-radius);
+    font-size: var(--btn-font);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+}
+
+button:focus,
+.toggle-btn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+/* ========== MOBILE LAYOUT ========== */
+@media(max-width:900px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        height: 100%;
+        z-index: 999;
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    .toggle-btn {
+        display: block;
+    }
+
+    main {
+        padding: 70px 16px 20px;
+    }
+
+    .row>div {
+        flex: 1 1 100%;
+    }
+
+    .mac-row {
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .mac-row select {
+        width: auto;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .mac-row button {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        margin-right: 6px;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    /* ให้ backdrop ขยับลง และใช้แบบ top-align เพื่อเลื่อนง่าย */
+    .modal-backdrop {
+        align-items: flex-start;
+        padding: 32px 0px;
+        /* มีระยะห่างทั้งบนและล่าง */
+
+    }
+
+    /* ฟอร์มเพิ่มถังบนมือถือ: ไม่ชิดขอบจอ และเลื่อนลื่นขึ้น */
+    .modal {
+        max-width: 100%;
+        margin: 0 16px 24px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #mapModalBackdrop {
+        align-items: center;
+        padding: 16px 0;
+    }
+
+    #mapModalBackdrop .modal {
+        margin: 0 16px;
+    }
+
+    .map-modal .modal-footer {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .map-modal .modal-footer .actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-inputs {
+        width: 100%;
+    }
+
+    .filter-field {
+        min-width: 100%;
+    }
+
+    .table-wrapper {
+        margin-top: 4px;
+        border-radius: 14px;
+    }
+
+    table {
+        font-size: 12px;
+        min-width: 580px;
+    }
+
+    th,
+    td {
+        padding: 6px 8px;
+    }
+}
+
+@media(max-width:900px) {
+    .menu-open .toggle-btn {
+        display: none;
+    }
+
+    .add-bin-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .add-bin-header button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ทำให้ input RFID เด่นขึ้นเมื่อฟอร์มเปิด */
+#rfid:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+    /* สีน้ำเงินของ primary */
+}
+
+/* 🔥 บังคับ SweetAlert ให้อยู่หน้าสุด */
+.swal2-container {
+    z-index: 999999 !important;
+}
+
+/* ====== Map picker modal ====== */
+.map-modal {
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.map-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#binMap {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+#mapModalBackdrop {
+    z-index: 1700;
+}
+
+.map-hint {
+    font-size: 13px;
+}
+
+.map-modal .modal-close {
+    font-size: 22px;
+    width: 36px;
+    height: 36px;
+    line-height: 1;
+    border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+    #binMap {
+        min-height: 260px;
+    }
+}
+
+/* ====== Refresh layout to match other admin pages ====== */
+.bin-page {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px 12px 0;
+}
+
+.page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 8px 0 18px;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 38px;
+    font-weight: 900;
+    color: #1f2937;
+    letter-spacing: -0.4px;
+}
+
+.page-sub {
+    margin: 6px 0 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #6b7280;
+}
+
+.page-actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.content {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+#btnToggleForm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    min-height: 40px;
+    background: #10b981;
+    color: #fff;
+    border: 1px solid rgba(16, 185, 129, .32);
+    border-radius: 10px;
+    font-weight: 800;
+    letter-spacing: -0.1px;
+    box-shadow: 0 10px 20px rgba(16, 185, 129, .2);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+#btnToggleForm:hover {
+    box-shadow: 0 14px 28px rgba(16, 185, 129, .26);
+    filter: brightness(1.03);
+}
+
+#btnToggleForm:active {
+    transform: translateY(1px) scale(.99);
+}
+
+#btnToggleForm .btnCreateLabel {
+    font-size: 14px;
+    line-height: 1;
+    display: inline-block;
+    transform: translateY(-1px);
+}
+
+#btnToggleForm .btn-icon {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.primary {
+    background: #10b981;
+    color: #fff;
+}
+
+.ghost {
+    background: #f4f4f5;
+    color: #111827;
+}
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 3px solid rgba(14, 165, 233, .25);
+    outline-offset: 2px;
+}
+
+.bin-table-card {
+    background: #fff;
+    border: 1px solid #e6ebf3;
+    border-radius: 0;
+    box-shadow: 0 10px 22px rgba(17, 24, 39, .06);
+    padding: 0;
+    overflow: hidden;
+}
+
+.table-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px;
+    background: #fff;
+    border-bottom: 1px solid #e6ebf3;
+    flex-wrap: wrap;
+}
+
+.table-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.table-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 900;
+    color: #1f2937;
+}
+
+.count-label {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+#binsStatus {
+    color: #10b981;
+    font-weight: 800;
+}
+
+#binsStatus.err {
+    color: #dc2626;
+}
+
+.count-label.ok {
+    color: #10b981;
+    font-weight: 800;
+}
+
+.count-label.err {
+    color: #dc2626;
+}
+
+.toolbar-fields {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.toolbar-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+}
+
+.toolbar-field span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* Hide filter headers and search on the bin registration page */
+.table-toolbar .toolbar-field > span {
+    display: none;
+}
+
+    .toolbar-field select,
+    .toolbar-field input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    background: #fff;
+        box-shadow: 0 10px 18px rgba(17, 24, 39, .02);
+    }
+
+.toolbar-field select:focus,
+.toolbar-field input:focus {
+    outline: 2px solid rgba(14, 165, 233, .25);
+    border-color: rgba(14, 165, 233, .55);
+    outline-offset: 2px;
+}
+
+.toolbar-field.search-box {
+    position: relative;
+    min-width: 240px;
+    width: 280px;
+    max-width: 100%;
+}
+
+.toolbar-field.search-box input {
+    height: 44px;
+    min-height: 44px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 10px 12px 10px 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%239b5cff'/%3E%3Cstop offset='1' stop-color='%2322c1f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='11' cy='11' r='7' fill='url(%23g)'/%3E%3Ccircle cx='11' cy='11' r='5.25' fill='%23ffffff' opacity='0.45'/%3E%3Cline x1='16.65' y1='16.65' x2='21' y2='21' stroke='%234b5563' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 16px 16px;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid #e6ebf3;
+    background: #f8fafc;
+}
+
+.usage-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 14px;
+    margin-top: -1px;
+}
+
+.usage-table th,
+.usage-table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 12px;
+    border-bottom: 1px solid #e6ebf3;
+    color: #0f172a;
+    background: #fff;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.usage-table thead th {
+    background: #f8fafc;
+    color: #374151;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1.2;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.usage-table th:first-child,
+.usage-table td:first-child {
+    text-align: center;
+}
+
+.usage-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.usage-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.bin-actions .icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    transition: transform .12s ease;
+}
+
+.bin-actions .icon-btn:hover {
+    transform: translateY(-1px);
+}
+
+.bin-actions .icon-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 900px) {
+    .page-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    #btnToggleForm {
+        width: auto;
+    }
+
+    .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .toolbar-fields {
+        width: 100%;
+        margin-left: 0;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .toolbar-field {
+        flex: 0 0 calc(50% - 6px);
+        min-width: 0;
+        width: auto;
+    }
+
+    .toolbar-field.search-box {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+
+    .toolbar-field select {
+        font-size: 12px;
+        padding: 8px 26px 8px 10px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .usage-table {
+        min-width: 860px;
+    }
+
+}
+    .toolbar-field select {
+        padding-right: 30px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }

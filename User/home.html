@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="../i18n/lang.js"></script>
+    <script src="../i18n/th.js"></script>
+    <script src="../i18n/en.js"></script>
+    <script src="../i18n/ms.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        /* =====================================================
+           HOME PAGE i18n BOOTSTRAP (CLEAN)
+           ===================================================== */
+        (function initHomeT() {
+
+            const lang =
+                localStorage.getItem("sw_lang") ||
+                (window.USER_LANG && window.USER_LANG.getLang?.()) ||
+                "th";
+
+            if (!window.SW_Translations || !window.SW_Translations[lang]) {
+                console.error("[i18n] Missing translations for lang:", lang);
+                window.T = {};
+                return;
+            }
+
+            window.T = window.SW_Translations[lang];
+
+        })();
+    </script>
+
+
+
+    <link rel="stylesheet" href="../Admin/admin-shell.css">
+    <link rel="stylesheet" href="user-shell.css">
+    <link rel="stylesheet" href="user-home.css">
+</head>
+
+<body data-active-nav="home">
+    <script>
+        // -----------------------------------------------------
+        // Firebase Configuration
+        // -----------------------------------------------------
+        var firebaseConfig = {
+            apiKey: "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw",
+            authDomain: "smartwaste2568-1d792.firebaseapp.com",
+            projectId: "smartwaste2568-1d792",
+            storageBucket: "smartwaste2568-1d792.firebasestorage.app",
+            messagingSenderId: "1041339993312",
+            appId: "1:1041339993312:web:65b26ea83dcbf4f8b29485",
+            databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+    </script>
+
+    <script src="../Login/auth.js"></script>
+    <script src="user-auth-bootstrap.js" defer></script>
+    <script src="user-shell.js" defer></script>
+
+    <!-- =======================
+     GLOBAL LOADER
+======================= -->
+    <div id="globalLoader" class="shell-loader show">
+        <div class="loader-box">
+            <div class="loader-spinner"></div>
+            <div class="loader-text" id="loadingText"></div>
+        </div>
+    </div>
+
+    <header class="top-header">
+        <div class="brand-left">
+            <button class="menu-toggle" id="menuToggleBtn" type="button" aria-label="????">
+                <i class="ri-menu-fill"></i>
+            </button>
+            <div class="brand-mark"><i class="ri-recycle-line"></i></div>
+            <div class="brand-name" id="brandTitle">Smart Waste</div>
+        </div>
+        <div class="header-right">
+            <div class="lang-switcher" style="position:relative;">
+                <button class="icon-btn" id="langIconBtn" type="button" aria-label="???????????">
+                    <i class="ri-global-line"></i>
+                </button>
+                <div class="lang-menu" id="langMenu">
+                    <button type="button" data-lang="th">ไทย</button>
+                    <button type="button" data-lang="en">English</button>
+                    <button type="button" data-lang="ms">Bahasa Melayu</button>
+                </div>
+            </div>
+            <div class="header-user" id="userProfileTop">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-meta">
+                    <div class="user-name" id="userLabel"></div>
+                    <div class="user-role" id="userRole"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+
+    <aside class="sidebar" id="sidebar" aria-label="????????????">
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatarMobile">U</div>
+            <div class="user-meta">
+                <div class="user-name" id="userLabelSide"></div>
+                <div class="user-role" id="userRoleSide"></div>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="home.html" data-nav="home">
+                <i class="ri-delete-bin-2-line"></i>
+                <span class="menu-text" id="menuMyBins"></span>
+            </a>
+
+            <a href="map.html" data-nav="map">
+                <i class="ri-map-pin-2-line"></i>
+                <span class="menu-text" id="menuMap"></span>
+            </a>
+        </nav>
+
+        <div class="sw-logout-slot">
+            <button onclick="SWAuth.logout()" class="sw-logout-btn" type="button">
+                <i class="ri-logout-box-line"></i>
+                <span id="menuLogout"></span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="admin-main user-main">
+        <div class="page-head">
+            <div>
+                <h1 class="page-title" id="homeTitle"></h1>
+                <p class="page-sub" id="homeSubtitle"></p>
+            </div>
+        </div>
+
+        <div class="card user-card">
+
+            <div class="selector">
+                <div class="select-wrap">
+                    <label>
+                        <i class="ri-list-check"></i>
+                        <span id="labelSelectBin"></span>
+                    </label>
+                    <select id="binSelect" disabled>
+                        <option id="binSelectInit"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="binCard" hidden>
+
+                <div class="bin-visual">
+                    <div class="bin-shell">
+                        <div class="bin-liquid" id="binFill"></div>
+                        <div class="bin-percent" id="binPercent">0%</div>
+                    </div>
+                </div>
+
+                <div class="bin-info">
+
+                    <div class="bin-header">
+                        <h2 id="binTitle" style="font-size:26px;color:var(--text-main);"></h2>
+                        <span id="liveBadge" class="status-badge" style="display:none;">
+                            <span class="live-dot"></span> LIVE
+                        </span>
+                    </div>
+
+                    <p class="muted" id="binDesc" style="margin-bottom:20px;"></p>
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <span><i class="ri-map-2-line"></i> <span id="labelZoneArea"></span></span>
+                            <div class="info-value" id="binZoneArea">-</div>
+                        </div>
+
+                        <div class="info-item">
+                            <span><i class="ri-barcode-box-line"></i> <span id="labelRfid"></span></span>
+                            <div class="info-value" id="binRfid">-</div>
+                        </div>
+
+                        <div class="info-item">
+                            <span><i class="ri-cpu-line"></i> <span id="labelMac"></span></span>
+                            <div class="info-value" id="binMac">-</div>
+                        </div>
+
+                        <div class="info-item">
+                            <span><i class="ri-gps-line"></i> <span id="labelGps"></span></span>
+                            <div class="info-value" id="binCoords" style="font-size:14px;">-</div>
+                        </div>
+
+                        <div class="info-item">
+                            <span><i class="ri-time-line"></i> <span id="labelUpdated"></span></span>
+                            <div class="info-value" id="binUpdated">-</div>
+                        </div>
+
+                        <div class="info-item">
+                            <span><i class="ri-scales-3-line"></i> <span id="labelWeight"></span></span>
+                            <div class="info-value" id="binWeight">-</div>
+                        </div>
+
+                    </div>
+
+                    <p id="status" class="muted" style="margin-top:20px;text-align:center;font-size:13px;">
+                    </p>
+
+                </div>
+            </div>
+        </div>
+        <!-- ===== END CARD ===== -->
+
+    </main>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const userLabelEl = $("userLabel");
+        const userAvatar = $("userAvatar");
+        const userAvatarMobile = $("userAvatarMobile");
+        const userLabelSide = $("userLabelSide");
+        const userRoleSide = $("userRoleSide");
+        const binSelect = $("binSelect");
+        const binCard = $("binCard");
+        const liveBadge = $("liveBadge");
+        const binFill = $("binFill");
+        const binPercent = $("binPercent");
+        const binTitle = $("binTitle");
+        const binDesc = $("binDesc");
+
+        const binZoneArea = $("binZoneArea");
+        const binRfid = $("binRfid");
+        const binMac = $("binMac");
+        const binCoords = $("binCoords");
+        const binUpdated = $("binUpdated");
+        const binWeight = $("binWeight");
+        const statusEl = $("status");
+        const loader = $("globalLoader");
+        let loaderHidden = false;
+        function hideLoader() {
+            if (!loader || loaderHidden) return;
+            loaderHidden = true;
+            loader.classList.remove("show");
+        }
+
+        const db = firebase.firestore();
+        const rtdb = firebase.database();
+        let myBins = [];
+        let currentBin = null;
+        let currentBinId = null;
+        let rtdbRef = null;
+        let rtdbCallback = null;
+
+        let currentUser = null;
+
+        // Utilities
+        function setStatus(text, type) {
+            statusEl.textContent = text || "";
+            statusEl.style.color = type === "err" ? "#ef4444" : "#059669";
+            if (type === "ok") {
+                setTimeout(() => statusEl.textContent = "", 4000);
+            }
+        }
+
+        function formatTimestamp(ts) {
+            if (!ts) return "-";
+            let date = ts;
+            if (typeof ts.toDate === "function") date = ts.toDate();
+            else if (!(ts instanceof Date)) date = new Date(ts);
+            if (!(date instanceof Date) || isNaN(date)) return "-";
+            const localeMap = { th: "th-TH", en: "en-US", ms: "ms-MY" };
+            const locale = localeMap[currentLang] || "th-TH";
+            return date.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" });
+        }
+
+        function formatWeight(weight) {
+            if (typeof weight !== "number" || Number.isNaN(weight)) return "-";
+            const rounded = Math.round(weight * 100) / 100;
+            const localeMap = { th: "th-TH", en: "en-US", ms: "ms-MY" };
+            const locale = localeMap[currentLang] || "th-TH";
+            const fractionDigits = rounded % 1 ? 2 : 0;
+            return `${rounded.toLocaleString(locale, {
+                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: 2
+            })} g`;
+        }
+
+        function normalizeFillLevel(value) {
+            if (typeof value !== "number" || Number.isNaN(value)) return null;
+            return Math.max(0, Math.min(100, Math.round(value)));
+        }
+
+        function renderFillLevel(level) {
+            if (typeof level !== "number" || Number.isNaN(level)) {
+                binFill.style.height = "0%";
+                binPercent.textContent = "--";
+                binFill.style.background = "linear-gradient(180deg, #cbd5e1, #cbd5e1)";
+                return;
+            }
+
+            binFill.style.height = level + "%";
+            binPercent.textContent = level + "%";
+
+            if (level >= 80) {
+                binFill.style.background = "linear-gradient(180deg, #ef4444, #ef4444)";
+            } else if (level >= 50) {
+                binFill.style.background = "linear-gradient(180deg, #f59e0b, #f59e0b)";
+            } else {
+                binFill.style.background = "linear-gradient(180deg, #10b981, #10b981)";
+            }
+        }
+
+        // --- UPDATED: Load My Bins (Group Query) ---
+        async function loadMyBins() {
+            myBins = [];
+            binSelect.innerHTML = `<option>${T.loadingData}</option>`;
+            binSelect.disabled = true;
+
+            try {
+                // ใช้ collectionGroup เพื่อค้นหา bin_data จากทุก Zone ทันที
+                // ไม่ต้องสนว่า Zone (Parent) จะมีตัวตนจริงหรือไม่
+                const snapshot = await db.collectionGroup("bin_data")
+                    .where("ownerUsername", "==", currentUser.username)
+                    .where("isHidden", "==", false)
+                    .get();
+
+                if (snapshot.empty) {
+                    renderBinList();
+                    hideLoader();
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+
+                    // ดึงชื่อ Zone จาก Path (Parent ของ Parent)
+                    const zoneId = doc.ref.parent.parent ? doc.ref.parent.parent.id : "Unknown";
+
+                    myBins.push({
+                        id: `${zoneId}/${doc.id}`,
+                        zone: zoneId,
+                        binId: d.binId || doc.id,
+                        macAddress: d.macAddress || null,
+                        ...d
+                    });
+                });
+
+                renderBinList();
+                hideLoader();
+
+            } catch (err) {
+                console.error("Load Bins Error:", err);
+                binSelect.innerHTML = `<option>${T.errorLoading}</option>`;
+
+                // แจ้งเตือนกรณีต้องสร้าง Index
+                if (err.code === 'failed-precondition' || err.message.includes("index")) {
+                    alert(T.errNeedIndex);
+                }
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // --- 3. Load Bin Details & Listen RTDB ---
+        async function loadBinDetail(entry) {
+            if (!entry) return;
+
+            if (rtdbRef && rtdbCallback) {
+                rtdbRef.off("value", rtdbCallback);
+                rtdbRef = null;
+                rtdbCallback = null;
+            }
+
+            currentBin = entry;
+
+            binTitle.textContent = entry.binId;
+            binDesc.textContent = entry.details || "-";
+            binZoneArea.textContent = `${entry.zone} / ${entry.area || "-"}`;
+            binRfid.textContent = entry.RFID || "-";
+            binMac.textContent = entry.macAddress || "-";
+            binCoords.textContent =
+                entry.lat && entry.lng
+                    ? `${entry.lat.toFixed(5)}, ${entry.lng.toFixed(5)}`
+                    : "-";
+            binUpdated.textContent = formatTimestamp(entry.updatedAt);
+            const weightValue =
+                typeof entry.weightGram === "number"
+                    ? entry.weightGram
+                    : (typeof entry.weight === "number" ? entry.weight : null);
+            binWeight.textContent = formatWeight(weightValue);
+
+            renderFillLevel(normalizeFillLevel(entry.fillLevel));
+            liveBadge.style.display = "none";
+
+            if (!entry.macAddress) {
+                setStatus(T.errNoMac, "err");
+                return;
+            }
+
+            const devicePath = `esp32_devices/${entry.macAddress}`;
+            console.log("📡 RTDB PATH =", devicePath);
+
+            rtdbRef = rtdb.ref(devicePath);
+
+            rtdbCallback = snapshot => {
+                const device = snapshot.val();
+                console.log("📦 RTDB DATA =", device);
+
+                if (!device) {
+                    setOffline(T.errNoDevice);
+                    return;
+                }
+
+                const level = normalizeFillLevel(device.fillLevel);
+                if (level !== null) {
+                    renderFillLevel(level);
+                }
+
+                if (typeof device.lastUpdate === "number") {
+                    binUpdated.textContent = formatTimestamp(device.lastUpdate);
+                }
+                if (typeof device.weight === "number") {
+                    binWeight.textContent = formatWeight(device.weight);
+                } else if (typeof device.weightGram === "number") {
+                    binWeight.textContent = formatWeight(device.weightGram);
+                }
+
+                if (typeof device.lastUpdate !== "number") {
+                    setOffline(T.errNoDevice);
+                    return;
+                }
+
+                const diffSec = (Date.now() - device.lastUpdate) / 1000;
+
+                if (diffSec > 30) {
+                    setOffline(`${T.offline} (${Math.floor(diffSec)}s)`);
+                    return;
+                }
+
+                if (level === null) {
+                    setStatus(T.errNoFillLevel, "err");
+                    return;
+                }
+
+                liveBadge.style.background = "#dcfce7";
+                liveBadge.style.color = "#16a34a";
+                liveBadge.innerHTML = `<span class="live-dot"></span> ${T.binLive}`;
+                liveBadge.style.display = "inline-flex";
+                setStatus(`${T.statusLive} ${level}%`, "ok");
+            };
+
+            rtdbRef.on("value", rtdbCallback);
+
+        }
+        function setOffline(msg) {
+            liveBadge.style.display = "inline-flex";
+            liveBadge.style.background = "#fee2e2";
+            liveBadge.style.color = "#dc2626";
+            liveBadge.innerHTML = T.binOffline;
+
+            setStatus(msg || T.errOffline, "err");
+        }
+
+        // ===============================
+        // Refresh bin status text (i18n)
+        // ===============================
+        function refreshBinStatusText() {
+            if (!currentBin) return;
+
+            // live badge (offline)
+            if (liveBadge.style.display !== "none") {
+                liveBadge.innerHTML = T.binOffline;
+            }
+
+            // status message
+            if (statusEl.textContent) {
+                if (statusEl.textContent.includes("Device")) {
+                    statusEl.textContent = T.errNoDevice;
+                }
+                if (statusEl.textContent.includes("Offline")) {
+                    statusEl.textContent = T.errOffline;
+                }
+            }
+        }
+
+        // --- 4. Render Bin List ---
+        function renderBinList() {
+            if (!myBins.length) {
+                binSelect.disabled = true;
+                binSelect.innerHTML = `<option>${T.noBins}</option>`;
+                binCard.hidden = true;
+                setStatus(T.noBins, "err");
+                return;
+            }
+
+            binCard.hidden = false;
+            binSelect.disabled = false;
+            binSelect.innerHTML = "";
+
+            myBins.forEach(entry => {
+                const opt = document.createElement("option");
+                opt.value = entry.id;
+                opt.textContent = `${entry.binId} (${entry.area || "-"})`;
+                binSelect.appendChild(opt);
+            });
+
+            if (!currentBinId || !myBins.some(b => b.id === currentBinId)) {
+                currentBinId = myBins[0].id;
+            }
+
+            binSelect.value = currentBinId;
+            loadBinDetail(myBins.find(b => b.id === currentBinId));
+        }
+
+        // Listeners
+        binSelect.onchange = () => {
+            const entry = myBins.find(b => b.id === binSelect.value);
+            if (entry) { currentBinId = entry.id; loadBinDetail(entry); }
+        };
+
+        window.onbeforeunload = () => {
+            if (rtdbRef && rtdbCallback) {
+                rtdbRef.off("value", rtdbCallback);
+            }
+        };
+    </script>
+    <script>
+        document.addEventListener("user-auth-ready", () => {
+            applyTranslations();
+
+            $("binSelectInit").textContent = T.loadingData;
+            binTitle.textContent = T.binPlaceholder;
+            binDesc.textContent = T.binDescPlaceholder;
+
+            const user = window.USER_AUTH;
+            if (!user) return;
+
+            const initial = user.displayName.charAt(0).toUpperCase();
+
+            userLabelEl.textContent = user.displayName;
+            if (userLabelSide) userLabelSide.textContent = user.displayName;
+            userAvatar.textContent = initial;
+            if (userAvatarMobile) userAvatarMobile.textContent = initial;
+
+            // role (user page = ?????????)
+            const roleEl = document.getElementById("userRole");
+            if (roleEl) roleEl.textContent = T.userRole_user;
+            if (userRoleSide) userRoleSide.textContent = T.userRole_user;
+
+            currentUser = user;
+
+            loadMyBins();
+        });
+
+        function applyTranslations() {
+            document.title = T.pageTitle_userHome;
+
+            $("brandTitle").textContent = T.brandTitle;
+            $("loadingText").textContent = T.loadingData;
+
+            $("homeTitle").textContent = T.homeTitle;
+            $("homeSubtitle").textContent = T.homeSubtitle;
+
+            $("labelSelectBin").textContent = T.labelSelectBin;
+            $("labelZoneArea").textContent = T.labelZoneArea;
+            $("labelRfid").textContent = T.labelRfid;
+            $("labelMac").textContent = T.labelMacAddress || T.labelMac || "MAC Address";
+            $("labelGps").textContent = T.labelGps;
+            $("labelUpdated").textContent = T.labelUpdated;
+            $("labelWeight").textContent = T.labelWeight;
+
+            // ✅ เพิ่ม 3 บรรทัดนี้
+            $("menuMyBins").textContent = T.menuMyBins;
+            $("menuMap").textContent = T.menuMap;
+            $("menuLogout").textContent = T.menuLogout;
+
+            // user role
+            const roleEl = document.getElementById("userRole");
+            if (roleEl) {
+                roleEl.textContent = T.userRole_user;
+            }
+            if (userRoleSide) {
+                userRoleSide.textContent = T.userRole_user;
+            }
+
+        }
+
+        /* ===============================
+       USER Language Switcher
+       =============================== */
+        function updateLangMenuActive() {
+            if (!langMenu) return;
+            langMenu.querySelectorAll("button[data-lang]").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.lang === currentLang);
+            });
+        }
+
+        let currentLang =
+            localStorage.getItem("sw_lang") ||
+            (window.USER_LANG && window.USER_LANG.getLang?.()) ||
+            "th";
+
+        const langIconBtn = document.getElementById("langIconBtn");
+        const langMenu = document.getElementById("langMenu"); // ✅ ต้องมาก่อน
+
+        applyLangTheme(currentLang);
+        updateLangMenuActive(); // ✅ ปลอดภัยแล้ว
+
+        function changeUserLanguage(lang) {
+            if (!window.SW_Translations || !window.SW_Translations[lang]) return;
+
+            currentLang = lang; // ✅ FIX หลัก
+
+            localStorage.setItem("sw_lang", lang);
+
+            if (window.USER_LANG && typeof window.USER_LANG.setLang === "function") {
+                window.USER_LANG.setLang(lang);
+            }
+
+            // re-init T
+            (function initHomeT() {
+                window.T = window.SW_Translations[lang];
+            })();
+
+            applyTranslations();
+            refreshBinStatusText();
+            updateLangMenuActive();
+            applyLangTheme(lang);
+        }
+
+        function applyLangTheme(lang) {
+            const root = document.documentElement;
+
+            switch (lang) {
+                case "th":
+                    root.style.setProperty(
+                        "--lang-shadow",
+                        "0 12px 30px rgba(5,150,105,.25)"
+                    );
+                    break;
+
+                case "en":
+                    root.style.setProperty(
+                        "--lang-shadow",
+                        "0 16px 40px rgba(37,99,235,.28)"
+                    );
+                    break;
+
+                case "ms":
+                    root.style.setProperty(
+                        "--lang-shadow",
+                        "0 14px 34px rgba(245,158,11,.28)"
+                    );
+                    break;
+            }
+        }
+
+        // คลิกเลือกภาษา
+        // คลิกเลือกภาษา (SAFE)
+        if (langMenu) {
+            langMenu.addEventListener("click", e => {
+                const btn = e.target.closest("button[data-lang]");
+                if (!btn) return;
+
+                changeUserLanguage(btn.dataset.lang);
+                langMenu.classList.remove("show");
+            });
+        }
+    </script>
+</body>
+
+</html>
