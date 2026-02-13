@@ -613,19 +613,19 @@
           <div class="form-grid">
             <div class="col-full input-wrapper">
               <i class="ri-user-smile-line input-icon"></i>
-              <input id="fullName" type="text" placeholder="ชื่อ-นามสกุล (Full Name)" required />
+              <input id="fullName" type="text" placeholder="ชื่อ-นามสกุล" required />
             </div>
             <div class="input-wrapper">
               <i class="ri-user-3-line input-icon"></i>
-              <input id="username" type="text" placeholder="Username" required />
+              <input id="username" type="text" placeholder="ชื่อผู้ใช้" required />
             </div>
             <div class="input-wrapper">
               <i class="ri-phone-line input-icon"></i>
-              <input id="phone" type="tel" placeholder="Phone" required />
+              <input id="phone" type="tel" placeholder="เบอร์โทรศัพท์" required />
             </div>
             <div class="col-full input-wrapper">
               <i class="ri-mail-line input-icon"></i>
-              <input id="email" type="email" placeholder="อีเมล (Email)" required />
+              <input id="email" type="email" placeholder="อีเมล" required />
             </div>
 
             <div class="input-wrapper">
@@ -661,16 +661,17 @@
     const statusEl = $("status");
     const submitBtn = $("submitBtn");
 
-    // --- Firebase Config (ตรวจสอบค่า Config ให้ถูกต้อง) ---
+    // --- Firebase Config ---
     var firebaseConfig = {
       apiKey: "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw",
       authDomain: "smartwaste2568-1d792.firebaseapp.com",
-      databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "smartwaste2568-1d792",
       storageBucket: "smartwaste2568-1d792.firebasestorage.app",
       messagingSenderId: "1041339993312",
       appId: "1:1041339993312:web:65b26ea83dcbf4f8b29485",
-      measurementId: "G-FV5TEPVZWN"
+      measurementId: "G-FV5TEPVZWN",
+      databaseURL: "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
+
     };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -731,12 +732,12 @@
         successReg: "ลงทะเบียนสำเร็จ!",
         welcomeTitle: "ร่วมกับเรา<br>เริ่มติดตามได้ทันที",
         welcomeDesc: "ลงทะเบียนเพื่อเข้าถึงระบบจัดการขยะอัจฉริยะ ติดตามรถขยะ และดูสถิติย้อนหลังได้ทันที",
-        fullNamePh: "ชื่อ-นามสกุล",
-        usernamePh: "ชื่อผู้ใช้",
-        phonePh: "เบอร์โทรศัพท์",
-        emailPh: "อีเมล",
-        passwordPh: "รหัสผ่าน",
-        confirmPasswordPh: "ยืนยันรหัสผ่าน",
+        regFullNamePh: "ชื่อ-นามสกุล",
+        regUsernamePh: "ชื่อผู้ใช้",
+        regPhonePh: "เบอร์โทรศัพท์",
+        regEmailPh: "อีเมล",
+        regPasswordPh: "รหัสผ่าน",
+        regConfirmPasswordPh: "ยืนยันรหัสผ่าน",
         btnBack: "กลับหน้าหลัก"
       },
       en: {
@@ -756,12 +757,12 @@
         successReg: "Registration Successful!",
         welcomeTitle: "Join Us &<br>Start Tracking",
         welcomeDesc: "Register to access smart waste management, track trucks, and view statistics instantly.",
-        fullNamePh: "Full name",
-        usernamePh: "Username",
-        phonePh: "Phone",
-        emailPh: "Email address",
-        passwordPh: "Password",
-        confirmPasswordPh: "Confirm password",
+        regFullNamePh: "Full name",
+        regUsernamePh: "Username",
+        regPhonePh: "Phone number",
+        regEmailPh: "Email address",
+        regPasswordPh: "Password",
+        regConfirmPasswordPh: "Confirm password",
         btnBack: "Back Home"
       },
       ms: {
@@ -781,12 +782,12 @@
         successReg: "Pendaftaran Berjaya!",
         welcomeTitle: "Sertai Kami &<br>Mula Menjejak",
         welcomeDesc: "Daftar untuk mengakses pengurusan sisa pintar, menjejak lori, dan melihat statistik dengan serta-merta.",
-        fullNamePh: "Nama penuh",
-        usernamePh: "Nama pengguna",
-        phonePh: "Telefon",
-        emailPh: "Alamat e-mel",
-        passwordPh: "Kata laluan",
-        confirmPasswordPh: "Sahkan kata laluan",
+        regFullNamePh: "Nama penuh",
+        regUsernamePh: "Nama pengguna",
+        regPhonePh: "Nombor telefon",
+        regEmailPh: "Alamat e-mel",
+        regPasswordPh: "Kata laluan",
+        regConfirmPasswordPh: "Sahkan kata laluan",
         btnBack: "Kembali ke Laman Utama"
       }
     };
@@ -813,12 +814,12 @@
       if ($("txtJoinDesc")) $("txtJoinDesc").textContent = tr("welcomeDesc");
 
       // Placeholders
-      if ($("fullName")) $("fullName").placeholder = tr("fullNamePh");
-      if ($("username")) $("username").placeholder = tr("usernamePh");
-      if ($("phone")) $("phone").placeholder = tr("phonePh");
-      if ($("email")) $("email").placeholder = tr("emailPh");
-      if ($("password")) $("password").placeholder = tr("passwordPh");
-      if ($("confirmPassword")) $("confirmPassword").placeholder = tr("confirmPasswordPh");
+      if ($("fullName")) $("fullName").placeholder = tr("regFullNamePh");
+      if ($("username")) $("username").placeholder = tr("regUsernamePh");
+      if ($("phone")) $("phone").placeholder = tr("regPhonePh");
+      if ($("email")) $("email").placeholder = tr("regEmailPh");
+      if ($("password")) $("password").placeholder = tr("regPasswordPh");
+      if ($("confirmPassword")) $("confirmPassword").placeholder = tr("regConfirmPasswordPh");
 
       langMenu.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.lang === currentLang));
     }

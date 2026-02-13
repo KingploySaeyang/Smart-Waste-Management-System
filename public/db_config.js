@@ -1,16 +1,7 @@
-/**
- * =========================================================
- * Firebase Base Configuration (Global)
- * File: public/db_config.js
- * Firebase SDK: v8.x
- * ใช้ร่วมกันทุกหน้า (Admin / User)
- * =========================================================
- */
 
 (function (window) {
     'use strict';
 
-    // ถ้ามีอยู่แล้ว ไม่ต้อง init ซ้ำ
     if (window.SWFirebase) {
         return;
     }
@@ -30,7 +21,7 @@
     };
 
     // -----------------------------------------------------
-    // Initialize Firebase (ครั้งเดียวเท่านั้น)
+    // Initialize Firebase
     // -----------------------------------------------------
     if (!firebase.apps || !firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
