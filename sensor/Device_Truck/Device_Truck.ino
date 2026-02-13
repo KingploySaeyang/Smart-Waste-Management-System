@@ -20,10 +20,7 @@
 
 #define FIREBASE_HOST "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
 #define FIREBASE_API_KEY "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw"
-
-
-// ✅ ใช้ Legacy Token (RTDB Secret) แทน Email/Password
-#define RTDB_SECRET   "GMuGBCsGkacuGbD153V1TBWpqufxfSskJfkoRgp8"
+#define FIREBASE_RTDB_SECRET "GMuGBCsGkacuGbD153V1TBWpqufxfSskJfkoRgp8"
 
 /* ================= RFID ================= */
 #define SS_PIN   5
@@ -51,6 +48,23 @@ String uidToString(MFRC522::Uid uid) {
   }
   s.toUpperCase();
   return s;
+}
+
+static void logFirebaseConnectedOnce() {
+  Serial.print("Firebase connecting");
+  unsigned long t0 = millis();
+
+  while (!Firebase.ready() && (millis() - t0 < 8000)) {
+    delay(200);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  if (Firebase.ready()) {
+    Serial.println("Firebase connected ✅");
+  } else {
+    Serial.println("Firebase not ready ❌");
+  }
 }
 
 /* ================= Setup ================= */
@@ -83,7 +97,7 @@ void setup() {
   /* Firebase Config (Legacy Token) */
   config.api_key = FIREBASE_API_KEY;
   config.database_url = FIREBASE_HOST; 
-  config.signer.tokens.legacy_token = RTDB_SECRET; 
+  config.signer.tokens.legacy_token = FIREBASE_RTDB_SECRET; 
   config.token_status_callback = tokenStatusCallback;
 
   // ปรับ Buffer แก้ปัญหา SSL หลุดบ่อย
@@ -92,6 +106,7 @@ void setup() {
 
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
+  logFirebaseConnectedOnce();
 
   /* Time Setup */
   configTime(7 * 3600, 0, "time.google.com", "pool.ntp.org", "time.nist.gov");
@@ -174,3 +189,5 @@ void sendRFIDEvent(String rfidUID) {
     Serial.println("REASON: " + fbdo.errorReason());
   }
 }
+
+

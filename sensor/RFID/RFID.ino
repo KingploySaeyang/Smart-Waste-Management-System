@@ -8,7 +8,7 @@
 #define WIFI_PASSWORD "123456878"
 
 // ================= Firebase =================
-#define FIREBASE_HOST "https://smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
+#define FIREBASE_HOST "smartwaste2568-1d792-default-rtdb.asia-southeast1.firebasedatabase.app"
 #define FIREBASE_API_KEY "AIzaSyA9SQW3iUwZWCgeG6eOYvvMU5g2hb_Zlrw"
 #define FIREBASE_RTDB_SECRET "GMuGBCsGkacuGbD153V1TBWpqufxfSskJfkoRgp8"
 
@@ -100,6 +100,23 @@ static bool shouldSend(const String& tag) {
   return true;
 }
 
+static void logFirebaseConnectedOnce() {
+  Serial.print("Firebase connecting");
+  unsigned long t0 = millis();
+
+  while (!Firebase.ready() && (millis() - t0 < 8000)) {
+    delay(200);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  if (Firebase.ready()) {
+    Serial.println("Firebase connected ✅");
+  } else {
+    Serial.println("Firebase not ready ❌");
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   delay(200);
@@ -117,12 +134,13 @@ void setup() {
   Serial.println("\nWiFi OK");
 
   // Firebase
-  config.database_url = FIREBASE_HOST;
+  config.database_url = String("https://") + FIREBASE_HOST;
   config.api_key = FIREBASE_API_KEY;
   config.signer.tokens.legacy_token = FIREBASE_RTDB_SECRET;
 
   Firebase.reconnectWiFi(true);
   Firebase.begin(&config, &auth);
+  logFirebaseConnectedOnce();
 
   // RFID
   SPI.begin(); // ถ้าสายคุณไม่ใช่ค่า default ให้ใช้ SPI.begin(SCK,MISO,MOSI,SS)

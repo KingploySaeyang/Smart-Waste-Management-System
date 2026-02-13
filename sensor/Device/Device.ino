@@ -4,8 +4,8 @@
 #include <time.h>
 #include <Preferences.h>
 
-// ================= WiFi =================
-#define WIFI_SSID     "SEEKUBALIK"
+// ================= WiFi ================= 
+#define WIFI_SSID "SEEKUBALIK"
 #define WIFI_PASSWORD "123456878"
 
 // ================= Firebase =================
@@ -23,14 +23,14 @@ const String DEVICES_STATUS_BASE_PATH = "/esp32_devices";
 #define ULTRASONIC_ECHO_PIN 23
 
 // ✅ ตั้งค่าระยะตามโจทย์ใหม่
-#define BIN_DEPTH_CM 55    // ความลึกถึงก้นถัง (ค่า 0%)
-#define TOP_OFFSET_CM 5    // ระยะเว้นว่างด้านบน (ค่า 100% เริ่มที่นี่)
+#define BIN_DEPTH_CM 55  // ความลึกถึงก้นถัง (ค่า 0%)
+#define TOP_OFFSET_CM 5  // ระยะเว้นว่างด้านบน (ค่า 100% เริ่มที่นี่)
 // ความสูงที่ใช้คำนวณจริง = 55 - 5 = 50 cm
 
 // HX711 Config
 #define HX711_DT 25
 #define HX711_SCK 26
-float calibration_factor = 1044.5; 
+float calibration_factor = 1044.5;
 
 // ================= Globals =================
 FirebaseData fbdo;
@@ -82,7 +82,7 @@ int readUltrasonicLevel() {
     delayMicroseconds(10);
     digitalWrite(ULTRASONIC_TRIG_PIN, LOW);
 
-    long duration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH, 40000); // เพิ่ม timeout นิดหน่อยเผื่อถังลึก
+    long duration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH, 40000);  // เพิ่ม timeout นิดหน่อยเผื่อถังลึก
 
     if (duration > 0) {
       float distance = duration * 0.0343 / 2;
@@ -105,7 +105,7 @@ int readUltrasonicLevel() {
   Serial.println(" cm");
 
   // --- เข้าสู่ตรรกะคำนวณ % ---
-  
+
   // 1. ถ้าขยะสูงเกินระยะ 5cm (ใกล้เซนเซอร์มาก) -> ให้เป็น 100%
   if (avgDistance <= TOP_OFFSET_CM) {
     return 100;
@@ -118,8 +118,8 @@ int readUltrasonicLevel() {
 
   // 3. คำนวณช่วงตรงกลาง (ระยะ 5cm ถึง 55cm)
   // ความสูงช่วงใช้งานจริง = 55 - 5 = 50 cm
-  float effectiveHeight = BIN_DEPTH_CM - TOP_OFFSET_CM; // = 50
-  
+  float effectiveHeight = BIN_DEPTH_CM - TOP_OFFSET_CM;  // = 50
+
   // ความสูงขยะที่นับได้ = ก้นถัง - ระยะวัดได้
   float trashHeight = BIN_DEPTH_CM - avgDistance;
 
@@ -132,7 +132,7 @@ int readUltrasonicLevel() {
 // ================= Weight Logic =================
 float readWeightGram() {
   if (!scale.is_ready()) return 0.0;
-  float weight = scale.get_units(5); 
+  float weight = scale.get_units(5);
   if (abs(weight) < 1.0) weight = 0.0;
   if (weight < 0) weight = 0.0;
   return weight;
@@ -140,7 +140,7 @@ float readWeightGram() {
 
 void forceTare() {
   Serial.println("Force Tare...");
-  scale.tare(); 
+  scale.tare();
   long newOffset = scale.get_offset();
   preferences.begin("scale", false);
   preferences.putLong("offset", newOffset);
@@ -152,8 +152,42 @@ void checkTareCommand() {
   if (Firebase.RTDB.getString(&fbdo, path)) {
     if (fbdo.stringData() == "SET") {
       forceTare();
-      Firebase.RTDB.setString(&fbdo, path, "OFF"); 
+      Firebase.RTDB.setString(&fbdo, path, "OFF");
     }
+  }
+}
+
+static void logWiFiConnected() {
+  Serial.print("WiFi connecting");
+  unsigned long t0 = millis();
+
+  while (WiFi.status() != WL_CONNECTED && (millis() - t0 < 15000)) {
+    delay(300);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("WiFi OK");
+  } else {
+    Serial.println("WiFi FAIL");
+  }
+}
+
+static void logFirebaseConnectedOnce() {
+  Serial.print("Firebase connecting");
+  unsigned long t0 = millis();
+
+  while (!Firebase.ready() && (millis() - t0 < 8000)) {
+    delay(200);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  if (Firebase.ready()) {
+    Serial.println("Firebase connected ✅");
+  } else {
+    Serial.println("Firebase not ready ❌");
   }
 }
 
@@ -185,11 +219,7 @@ void setup() {
 
   // WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(300);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi connected");
+  logWiFiConnected();
 
   configTime(7 * 3600, 0, "129.6.15.28", "203.107.6.88");
 
@@ -205,6 +235,7 @@ void setup() {
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
   firebaseReady = true;
+  logFirebaseConnectedOnce();
 
   String boundPath = DEVICES_STATUS_BASE_PATH + "/" + macAddress + "/bound";
   if (Firebase.RTDB.getBool(&fbdo, boundPath)) {
@@ -237,10 +268,12 @@ void loop() {
     Firebase.RTDB.updateNode(
       &fbdo,
       DEVICES_STATUS_BASE_PATH + "/" + macAddress,
-      &json
-    );
+      &json);
 
-    Serial.print("Level: "); Serial.print(level);
-    Serial.print("% | Weight: "); Serial.print(weight); Serial.println(" g");
+    Serial.print("Level: ");
+    Serial.print(level);
+    Serial.print("% | Weight: ");
+    Serial.print(weight);
+    Serial.println(" g");
   }
 }
